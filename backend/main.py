@@ -118,6 +118,28 @@ async def analyze(files: List[UploadFile] = File(...), config: Optional[str] = F
 # ---------------------------------------------------------------------------
 # 프론트엔드 정적 파일 서빙 (backend와 같은 서버에서 제공)
 # ---------------------------------------------------------------------------
-_FRONTEND_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+_FRONTEND_DIR = os.environ.get("QC_FRONTEND_DIR") or os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "frontend")
+)
+_frontend_ok = os.path.isdir(_FRONTEND_DIR) and os.path.isfile(os.path.join(_FRONTEND_DIR, "index.html"))
+
+print(f"[startup] __file__ = {os.path.abspath(__file__)}", flush=True)
+print(f"[startup] frontend dir resolved to: {_FRONTEND_DIR}", flush=True)
+print(f"[startup] frontend dir usable: {_frontend_ok}", flush=True)
 if os.path.isdir(_FRONTEND_DIR):
+    print(f"[startup] contents: {os.listdir(_FRONTEND_DIR)}", flush=True)
+
+if _frontend_ok:
     app.mount("/", StaticFiles(directory=_FRONTEND_DIR, html=True), name="frontend")
+else:
+    # 정적 파일을 못 찾은 경우에도 조용히 404가 뜨지 않도록, 원인을 알 수 있는 안내를 보여준다.
+    @app.get("/")
+    def frontend_missing():
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": "프론트엔드 정적 파일을 찾을 수 없습니다.",
+                "checked_path": _FRONTEND_DIR,
+                "hint": "배포 환경에 frontend/ 디렉터리가 이미지에 포함되었는지 확인하세요.",
+            },
+        )

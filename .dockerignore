@@ -1,0 +1,7 @@
+.git
+**/__pycache__
+**/*.pyc
+backend/.venv
+backend/.pytest_cache
+samples
+README.md
