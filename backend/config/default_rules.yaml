@@ -1,0 +1,76 @@
+# =========================================================================
+# QC 도구 기본 규칙 (팀 표준 프리셋)
+# 이 파일의 값은 프론트엔드 설정 패널에서 요청 단위로 덮어쓸 수 있습니다.
+# =========================================================================
+
+thresholds:
+  missing:
+    warning: 0.01      # 결측 비율이 1% 이상이면 경고
+    fail: 0.10          # 10% 이상이면 실패
+  time_gap:
+    tolerance_factor: 1.5   # 예상 간격의 1.5배를 초과하면 결측 구간으로 판정
+    warning_gaps: 1          # 결측 구간이 1개 이상이면 경고
+    fail_gaps: 5              # 5개 이상이면 실패
+    fail_ratio: 0.05          # 예상 시점 대비 5% 이상 비면 실패(점수 계산용)
+  outlier:
+    method: zscore            # zscore | iqr
+    zscore_threshold: 3.0
+    iqr_multiplier: 1.5
+    warning: 0.01
+    fail: 0.05
+  range:
+    warning: 0.001
+    fail: 0.01
+  duplicates:
+    warning: 0.0001
+    fail: 0.01
+  metadata:
+    warning: 0.6              # 준수율이 60% 미만이면 경고
+    fail: 0.3                  # 30% 미만이면 실패
+
+weights:
+  missing_values: 20
+  time_continuity: 15
+  range_check: 20
+  outliers: 15
+  metadata: 15
+  duplicates: 15
+
+# 변수명(소문자, 부분일치 허용)별 물리적으로 타당한 값의 범위
+variable_ranges:
+  temperature: {min: -90, max: 60, unit: "degC"}
+  temp: {min: -90, max: 60, unit: "degC"}
+  tair: {min: -90, max: 60, unit: "degC"}
+  ta: {min: 180, max: 340, unit: "K"}
+  sst: {min: -5, max: 40, unit: "degC"}
+  tos: {min: -5, max: 40, unit: "degC"}
+  humidity: {min: 0, max: 100, unit: "%"}
+  rh: {min: 0, max: 100, unit: "%"}
+  hus: {min: 0, max: 0.05, unit: "1"}
+  precipitation: {min: 0, max: 500, unit: "mm"}
+  precip: {min: 0, max: 500, unit: "mm"}
+  pr: {min: 0, max: 0.02, unit: "kg m-2 s-1"}
+  pressure: {min: 800, max: 1100, unit: "hPa"}
+  slp: {min: 800, max: 1100, unit: "hPa"}
+  psl: {min: 80000, max: 110000, unit: "Pa"}
+  wind_speed: {min: 0, max: 120, unit: "m/s"}
+  wspd: {min: 0, max: 120, unit: "m/s"}
+  uas: {min: -100, max: 100, unit: "m/s"}
+  vas: {min: -100, max: 100, unit: "m/s"}
+  salinity: {min: 0, max: 45, unit: "psu"}
+  so: {min: 0, max: 45, unit: "psu"}
+  chl: {min: 0, max: 100, unit: "mg/m3"}
+  depth: {min: 0, max: 11000, unit: "m"}
+
+# 메타데이터 규칙
+metadata_rules:
+  required_global_attrs: ["Conventions", "title", "institution"]
+  required_var_attrs: ["units", "long_name"]
+  cf_convention_prefix: "CF-"
+  expected_units:
+    temperature: ["degc", "celsius", "k", "kelvin"]
+    humidity: ["%", "1", "percent"]
+    pressure: ["hpa", "pa", "mbar"]
+    wind_speed: ["m/s", "m s-1"]
+    salinity: ["psu", "1e-3", "ppt"]
+    precipitation: ["mm", "kg m-2", "kg m-2 s-1", "mm/day"]
