@@ -67,6 +67,50 @@ docker compose up --build
 # http://localhost:8000 접속
 ```
 
+## 직원들과 함께 쓰기 (배포)
+
+로컬 실행(`./run.sh`)은 "내 컴퓨터에서 켜져 있는 동안만" 나만 접속할 수 있는 방식입니다. 여러 사람이
+설치 없이 링크만 열어서 쓰게 하려면, **누군가 한 명이 서버에 한 번 배포**해두고 그 주소를 공유하면 됩니다.
+브라우저만 있으면 되고, 접속하는 직원은 git이나 Python을 몰라도 됩니다.
+
+### 방법 A: 무료 클라우드에 배포 (Render) — 사내 서버가 없을 때 추천
+
+1. [render.com](https://render.com) 가입 (GitHub 계정으로 바로 가능)
+2. **New +** → **Blueprint** → 이 저장소(`Febrary22/qc_confirm`) 선택
+   - 저장소에 포함된 `render.yaml`을 자동으로 인식해서 설정을 거의 그대로 채워줍니다.
+3. `QC_BASIC_AUTH_USER` / `QC_BASIC_AUTH_PASS` 입력 (외부에 공개되지 않게 로그인 계정을 걸고 싶을 때만.
+   비워두면 링크를 아는 누구나 접속 가능)
+4. **Deploy** 클릭 → 몇 분 후 `https://qc-confirm-xxxx.onrender.com` 같은 주소가 발급됩니다.
+5. 이 주소를 직원들에게 공유하면 끝. 각자 브라우저로 열기만 하면 됩니다.
+
+> 무료 플랜은 한동안 접속이 없으면 서버가 잠들어서 첫 접속이 몇 초~수십 초 느릴 수 있습니다.
+> 업무용으로 상시 빠르게 쓰려면 유료 플랜(월 몇 달러 수준)을 권장합니다. Railway, Fly.io 등 다른
+> PaaS도 이 저장소의 `Dockerfile`을 그대로 인식해 비슷하게 배포할 수 있습니다.
+
+### 방법 B: 사내 서버에 배포 — 데이터를 외부로 내보내고 싶지 않을 때 추천
+
+회사에 상시 켜져 있는 서버(사내 리눅스 서버, 사설 클라우드 VM 등)가 있다면 그 위에서 한 번만 실행합니다.
+
+```bash
+git clone https://github.com/Febrary22/qc_confirm.git
+cd qc_confirm
+docker compose up --build -d   # -d: 백그라운드로 계속 실행
+```
+
+이후 직원들은 `http://<그 서버의 사내 IP 또는 주소>:8000` 으로 접속하면 됩니다. 서버가 재부팅되어도
+`restart: unless-stopped` 설정 덕분에 자동으로 다시 켜집니다.
+
+### 접속 계정으로 제한하기 (선택)
+
+업로드하는 데이터가 민감할 수 있으므로, 아무나 링크로 못 들어오게 하려면 `QC_BASIC_AUTH_USER` /
+`QC_BASIC_AUTH_PASS` 환경변수 두 개를 채워주세요. 설정하면 접속 시 브라우저에 표준 로그인 창이 뜨고,
+비워두면(기본값) 인증 없이 누구나 링크로 접속할 수 있습니다.
+
+```bash
+# docker compose 예시
+QC_BASIC_AUTH_USER=team QC_BASIC_AUTH_PASS='원하는비밀번호' docker compose up --build -d
+```
+
 ## 사용 방법
 
 바로 체험해보고 싶다면 `samples/` 폴더에 들어있는 예시 파일을 그대로 업로드해도 됩니다.

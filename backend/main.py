@@ -4,14 +4,17 @@
 """
 from __future__ import annotations
 
+import base64
 import json
 import os
+import secrets
 from typing import List, Optional
 
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from qc.loader import UnsupportedFileError, load_file
 from qc.report import load_default_config, run_qc
@@ -25,6 +28,40 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ---------------------------------------------------------------------------
+# (선택) 사내 공유 배포용 간단한 접근 제어
+# QC_BASIC_AUTH_USER / QC_BASIC_AUTH_PASS 환경변수가 둘 다 설정된 경우에만 활성화된다.
+# 설정하지 않으면(로컬 실습 등) 기존처럼 인증 없이 접근 가능.
+# ---------------------------------------------------------------------------
+_BASIC_AUTH_USER = os.environ.get("QC_BASIC_AUTH_USER")
+_BASIC_AUTH_PASS = os.environ.get("QC_BASIC_AUTH_PASS")
+
+
+class BasicAuthMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        if not (_BASIC_AUTH_USER and _BASIC_AUTH_PASS):
+            return await call_next(request)
+
+        header = request.headers.get("authorization", "")
+        if header.startswith("Basic "):
+            try:
+                user, _, pw = base64.b64decode(header[6:]).decode("utf-8").partition(":")
+            except Exception:  # noqa: BLE001
+                user, pw = "", ""
+            if secrets.compare_digest(user, _BASIC_AUTH_USER) and secrets.compare_digest(pw, _BASIC_AUTH_PASS):
+                return await call_next(request)
+
+        return Response(
+            content="인증이 필요합니다. (관리자에게 접속 계정을 문의하세요)",
+            status_code=401,
+            headers={"WWW-Authenticate": 'Basic realm="QC Tool"'},
+        )
+
+
+if _BASIC_AUTH_USER and _BASIC_AUTH_PASS:
+    app.add_middleware(BasicAuthMiddleware)
 
 
 @app.get("/api/health")
