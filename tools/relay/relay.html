@@ -126,11 +126,53 @@
 
   .presence-last { font-size: 9.5px; color: var(--faint); flex-shrink: 0; }
   .dm-btn {
+    position: relative;
     border: none; background: none; cursor: pointer; font-size: 12px;
     padding: 2px 4px; border-radius: 6px; flex-shrink: 0; line-height: 1;
     opacity: .7;
   }
   .dm-btn:hover { background: var(--surface-2); opacity: 1; }
+  .dm-btn.has-unread { opacity: 1; }
+  .dm-dot {
+    position: absolute; top: -1px; right: -1px; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--danger); border: 1.5px solid var(--surface);
+  }
+  .presence-menu-btn {
+    border: none; background: none; cursor: pointer; color: var(--faint);
+    font-size: 14px; line-height: 1; padding: 2px 5px; border-radius: 6px; flex-shrink: 0;
+  }
+  .presence-menu-btn:hover { background: var(--surface-2); color: var(--ink); }
+  .self-edit-panel {
+    margin-top: 6px; padding: 11px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface-2); display: flex; flex-direction: column; gap: 8px;
+  }
+  #self-edit-name {
+    width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px;
+    font: inherit; font-size: 13px; background: var(--surface); color: var(--ink);
+  }
+  #self-edit-name:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  #self-edit-cancel {
+    flex: 1; border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+    border-radius: 9px; cursor: pointer; font: inherit; font-size: 13px;
+  }
+  #self-edit-cancel:hover { background: var(--surface-2); }
+
+  /* ---- notifications ---- */
+  #notify-bell {
+    border: none; background: none; cursor: pointer; font-size: 16px;
+    position: relative; flex-shrink: 0; padding: 4px; margin-left: auto;
+    line-height: 1;
+  }
+  #notify-count {
+    position: absolute; top: -3px; right: -3px; min-width: 15px; height: 15px;
+    padding: 0 3px; border-radius: 999px; background: var(--danger); color: #fff;
+    font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .tab-btn { position: relative; }
+  .tab-dot {
+    position: absolute; top: 6px; left: 23px; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--danger);
+  }
 
   #conn-pill {
     margin-top: auto;
@@ -436,6 +478,52 @@
     background: var(--surface-2); padding: 1px 5px; border-radius: 4px; color: var(--accent-strong);
   }
 
+  /* ---- forum ---- */
+  #forum-wrap { flex: 1; overflow-y: auto; padding: 22px 28px 28px; max-width: 620px; }
+  #forum-new-btn { margin-bottom: 16px; }
+  #forum-compose {
+    display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: var(--surface);
+  }
+  #forum-title-input, #forum-body-input {
+    border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+    border-radius: 8px; padding: 9px 11px; font: inherit; font-size: 13.5px; resize: vertical;
+  }
+  #forum-title-input:focus, #forum-body-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  #forum-compose-cancel {
+    border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+    border-radius: 9px; padding: 0 16px; font: inherit; font-size: 13px; cursor: pointer;
+  }
+  #forum-compose-cancel:hover { background: var(--surface-2); }
+  .forum-post-card {
+    border-bottom: 1px solid var(--line); padding: 13px 4px; cursor: pointer;
+  }
+  .forum-post-card:hover .forum-post-title { color: var(--accent-strong); }
+  .forum-post-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .forum-post-preview {
+    font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 6px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .forum-post-meta { font-size: 10.5px; color: var(--faint); }
+  #forum-back-btn {
+    border: none; background: none; color: var(--muted); cursor: pointer;
+    font: inherit; font-size: 12.5px; padding: 4px 0; margin-bottom: 14px;
+  }
+  #forum-back-btn:hover { color: var(--accent-strong); }
+  #forum-detail-post { margin-bottom: 20px; }
+  #forum-detail-post .forum-post-title { font-size: 17px; margin-bottom: 6px; }
+  #forum-detail-post .forum-post-body { font-size: 13.5px; line-height: 1.65; white-space: pre-wrap; word-break: break-word; margin: 10px 0; }
+  #forum-comments { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .forum-comment {
+    display: flex; gap: 9px; padding: 9px 0; border-top: 1px solid var(--line);
+  }
+  #forum-comment-add { display: flex; gap: 8px; }
+  #forum-comment-input {
+    flex: 1; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    border-radius: 9px; padding: 9px 12px; font: inherit; font-size: 13px;
+  }
+  #forum-comment-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
   /* ---- name gate ---- */
   #gate {
     position: fixed; inset: 0; background: rgba(18, 21, 26, 0.55);
@@ -499,10 +587,15 @@
       <button class="tab-btn" data-view="chat">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
         채팅
+        <span class="tab-dot" id="chat-tab-dot" hidden></span>
       </button>
       <button class="tab-btn" data-view="board">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
         보드
+      </button>
+      <button class="tab-btn" data-view="forum">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16M4 12h10M4 19h13"/></svg>
+        게시판
       </button>
       <button class="tab-btn" data-view="cal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>
@@ -513,6 +606,15 @@
     <div class="side-section">
       <div class="side-label">지금 접속 중</div>
       <div id="presence-list"></div>
+      <div id="self-edit-panel" class="self-edit-panel" hidden>
+        <div class="side-label">내 정보 수정</div>
+        <input id="self-edit-name" type="text" maxlength="24" placeholder="표시 이름" />
+        <div id="self-edit-colors" class="cal-color-picker"></div>
+        <div style="display:flex;gap:6px">
+          <button id="self-edit-save" class="board-add-btn" style="flex:1">저장</button>
+          <button id="self-edit-cancel">취소</button>
+        </div>
+      </div>
     </div>
 
     <div class="side-section">
@@ -529,6 +631,7 @@
         <div id="view-title">홈</div>
         <div id="view-desc">Relay를 어떻게 쓰면 되는지 한눈에 볼 수 있어요.</div>
       </div>
+      <button id="notify-bell" title="알림">🔔<span id="notify-count" hidden>0</span></button>
     </header>
 
     <section id="view-home" class="view active">
@@ -580,6 +683,32 @@
         <div class="board-group">
           <div class="board-group-label">완료</div>
           <div id="board-done" class="board-empty"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-forum" class="view">
+      <div id="forum-wrap">
+        <div id="forum-list-view">
+          <button class="board-add-btn" id="forum-new-btn">✎ 새 글쓰기</button>
+          <div id="forum-compose" hidden>
+            <input id="forum-title-input" type="text" placeholder="제목" maxlength="80" />
+            <textarea id="forum-body-input" rows="4" placeholder="문의, 잡담, 공지 등 자유롭게 적어주세요..."></textarea>
+            <div style="display:flex;gap:8px">
+              <button class="board-add-btn" id="forum-submit-btn">올리기</button>
+              <button id="forum-compose-cancel">취소</button>
+            </div>
+          </div>
+          <div id="forum-posts"></div>
+        </div>
+        <div id="forum-detail-view" hidden>
+          <button id="forum-back-btn">← 목록으로</button>
+          <div id="forum-detail-post"></div>
+          <div id="forum-comments"></div>
+          <div id="forum-comment-add">
+            <input id="forum-comment-input" type="text" placeholder="댓글 달기..." maxlength="400" />
+            <button class="board-add-btn" id="forum-comment-btn">등록</button>
+          </div>
         </div>
       </div>
     </section>
@@ -680,6 +809,38 @@
     return Math.floor(hr / 24) + "일 전";
   }
 
+  // ---------- notifications (shared state, read/written by chat, DM, presence) ----------
+  var pageLoadTs = Date.now();
+  var lastReadChatTs = pageLoadTs;
+  var lastChatSnap = null;
+  var unreadChat = 0;
+  var dmLastRead = {};     // otherName -> ts I last opened that DM
+  var dmOpenWith = null;   // otherName currently open in the DM panel, or null
+  var unreadByPerson = {}; // otherName -> true if they have an unread DM for me
+  var roomRef = null;
+  var presenceRefresh = null; // set by initPresence once running
+
+  function refreshNotify() {
+    var dmCount = Object.keys(unreadByPerson).filter(function (k) { return unreadByPerson[k]; }).length;
+    var total = unreadChat + dmCount;
+    var countEl = document.getElementById("notify-count");
+    countEl.hidden = total === 0;
+    countEl.textContent = total > 9 ? "9+" : String(total);
+    document.getElementById("chat-tab-dot").hidden = unreadChat === 0;
+  }
+  function computeChatUnread(snap) {
+    lastChatSnap = snap;
+    unreadChat = snap.docs.filter(function (d) {
+      var m = d.data();
+      return m && m.kind !== "system" && m.author && m.author !== myName && m.ts > lastReadChatTs;
+    }).length;
+    refreshNotify();
+  }
+  function markChatRead() {
+    lastReadChatTs = Date.now();
+    if (lastChatSnap) computeChatUnread(lastChatSnap); else { unreadChat = 0; refreshNotify(); }
+  }
+
   function enter(name) {
     myName = name.trim().slice(0, 24) || "익명";
     myColor = colorFor(myName);
@@ -707,8 +868,10 @@
     home: ["홈", "Relay를 어떻게 쓰면 되는지 한눈에 볼 수 있어요."],
     chat: ["채팅", '팀 대화. <b class="mono" style="color:var(--accent-strong)">/ask</b>로 Claude에게 바로 묻고, <b class="mono" style="color:var(--accent-strong)">/github</b>로 저장소 작업을 맡길 수 있어요.'],
     board: ["보드", "팀이 함께 챙기는 할 일 목록. 아무나 추가하고 체크할 수 있어요."],
+    forum: ["게시판", "자유롭게 글 쓰고 답글 다는 게시판이에요. 문의나 잡담, 공지 등 무엇이든 편하게 남겨보세요."],
     cal: ["달력", "팀 일정을 날짜에 남겨두는 공유 달력이에요. 날짜를 클릭하면 일정을 추가할 수 있어요."],
   };
+  var activeView = "home";
   tabBtns.forEach(function (btn) {
     btn.addEventListener("click", function () {
       tabBtns.forEach(function (b) { b.classList.remove("active"); });
@@ -718,7 +881,18 @@
       var t = titles[btn.dataset.view];
       document.getElementById("view-title").textContent = t[0];
       document.getElementById("view-desc").innerHTML = t[1];
+      activeView = btn.dataset.view;
+      if (activeView === "chat") markChatRead();
     });
+  });
+
+  document.getElementById("notify-bell").addEventListener("click", function () {
+    if (unreadChat > 0) {
+      document.querySelector('.tab-btn[data-view="chat"]').click();
+      return;
+    }
+    var name = Object.keys(unreadByPerson).filter(function (k) { return unreadByPerson[k]; })[0];
+    if (name && dmOpen) dmOpen(name);
   });
 
   // ---------- boot: capabilities ----------
@@ -736,7 +910,9 @@
         '<div class="msg system"><div class="msg-text">이 화면에서는 저장 기능을 쓸 수 없어요. Claude 아티팩트로 열어주세요.</div></div>';
       if (db) initBoard(db); else document.getElementById("board-open").textContent = "이 화면에서는 보드를 쓸 수 없어요.";
       if (db) initCalendar(db); else document.getElementById("cal-grid").textContent = "이 화면에서는 달력을 쓸 수 없어요.";
+      if (db) initForum(db); else document.getElementById("forum-posts").textContent = "이 화면에서는 게시판을 쓸 수 없어요.";
       if (db) initDM(db);
+      if (db) initSelfEdit(db);
       if (db) initPresence(db, room); else renderPresenceFallback();
     });
   }
@@ -766,8 +942,11 @@
     var roster = [];        // roster docs
 
     function dmBtn(name) {
-      return name === myName ? "" : '<button class="dm-btn" data-name="' + esc(name) + '" title="' + esc(name) + '님과 대화">💬</button>';
+      if (name === myName) return "";
+      var unread = unreadByPerson[name];
+      return '<button class="dm-btn' + (unread ? " has-unread" : "") + '" data-name="' + esc(name) + '" title="' + esc(name) + '님과 대화">💬' + (unread ? '<span class="dm-dot"></span>' : "") + '</button>';
     }
+    var selfMenuBtn = '<button class="presence-menu-btn" id="presence-self-menu" title="내 정보 수정">⋮</button>';
 
     function renderAll() {
       var onlineIds = {};
@@ -782,14 +961,14 @@
           row.innerHTML =
             '<span class="presence-dot" style="background:' + pc + '"></span>' +
             '<span class="presence-name">' + esc(pn) + '</span>' +
-            (p.isMe ? '<span class="presence-you">나</span>' : dmBtn(String(pn)));
+            (p.isMe ? '<span class="presence-you">나</span>' + selfMenuBtn : dmBtn(String(pn)));
           onlineList.appendChild(row);
         });
       } else {
         onlineIds[myId] = true;
         var row = document.createElement("div");
         row.className = "presence-row";
-        row.innerHTML = '<span class="presence-dot" style="background:' + myColor + '"></span><span class="presence-name">' + esc(myName) + '</span><span class="presence-you">나</span>';
+        row.innerHTML = '<span class="presence-dot" style="background:' + myColor + '"></span><span class="presence-name">' + esc(myName) + '</span><span class="presence-you">나</span>' + selfMenuBtn;
         onlineList.appendChild(row);
       }
 
@@ -822,6 +1001,9 @@
     }
     touchRoster();
     setInterval(touchRoster, 90000);
+
+    presenceRefresh = renderAll;
+    roomRef = room;
 
     var pill = document.getElementById("conn-pill");
     var text = document.getElementById("conn-text");
@@ -876,6 +1058,11 @@
 
     dmOpen = function (name) {
       otherName = name;
+      dmOpenWith = name;
+      dmLastRead[name] = Date.now();
+      unreadByPerson[name] = false;
+      refreshNotify();
+      if (presenceRefresh) presenceRefresh();
       titleEl.textContent = name + " 님과의 대화";
       panel.hidden = false;
       if (unsub) unsub();
@@ -888,6 +1075,7 @@
 
     closeBtn.addEventListener("click", function () {
       panel.hidden = true;
+      dmOpenWith = null;
       if (unsub) { unsub(); unsub = null; }
     });
 
@@ -895,7 +1083,13 @@
       var text = input.value.trim();
       if (!text || !otherName) return;
       input.value = "";
-      db.doc("dms/" + convoId(myName, otherName)).collection("messages").add({ author: myName, text: text, ts: Date.now() });
+      var id = convoId(myName, otherName);
+      var ts = Date.now();
+      db.doc("dms/" + id).collection("messages").add({ author: myName, text: text, ts: ts });
+      db.doc("dm_index/" + id).set({
+        memberA: myName, memberB: otherName, members: [myName, otherName],
+        lastAuthor: myName, lastText: text, lastTs: ts,
+      });
     }
     sendBtn.addEventListener("click", send);
     input.addEventListener("keydown", function (e) { if (e.key === "Enter") send(); });
@@ -904,6 +1098,24 @@
       var btn = e.target.closest(".dm-btn");
       if (btn) dmOpen(btn.dataset.name);
     });
+
+    // notice new DMs across every conversation, without subscribing to each one
+    db.collection("dm_index").where("members", "array-contains", myName).orderBy("lastTs", "desc").limit(50)
+      .onSnapshot(function (snap) {
+        var next = {};
+        snap.docs.forEach(function (d) {
+          var data = d.data();
+          if (!data) return;
+          var other = data.memberA === myName ? data.memberB : (data.memberB === myName ? data.memberA : null);
+          if (!other) return;
+          if (data.lastAuthor && data.lastAuthor !== myName && data.lastTs > (dmLastRead[other] || pageLoadTs) && dmOpenWith !== other) {
+            next[other] = true;
+          }
+        });
+        unreadByPerson = next;
+        refreshNotify();
+        if (presenceRefresh) presenceRefresh();
+      }, function () { /* dm_index unavailable: DMs still work, just no unread badges */ });
   }
 
   // ---------- chat ----------
@@ -953,7 +1165,10 @@
       if (atBottom) feed.scrollTop = feed.scrollHeight;
     }
 
-    col.orderBy("ts", "asc").limit(200).onSnapshot(renderMessages, function () {
+    col.orderBy("ts", "asc").limit(200).onSnapshot(function (snap) {
+      computeChatUnread(snap);
+      renderMessages(snap);
+    }, function () {
       feed.innerHTML = '<div class="msg system"><div class="msg-text">채팅을 불러오지 못했어요. 새로고침해보세요.</div></div>';
     });
 
@@ -1350,6 +1565,164 @@
     }
     addBtn.addEventListener("click", addEvent);
     input.addEventListener("keydown", function (e) { if (e.key === "Enter") addEvent(); });
+  }
+
+  // ---------- self profile edit ----------
+  function initSelfEdit(db) {
+    var panel = document.getElementById("self-edit-panel");
+    var nameInput = document.getElementById("self-edit-name");
+    var colorsWrap = document.getElementById("self-edit-colors");
+    var chosenColor = myColor;
+
+    PALETTE.forEach(function (c) {
+      var b = document.createElement("button");
+      b.className = "cal-swatch" + (c === myColor ? " selected" : "");
+      b.style.background = c;
+      b.type = "button";
+      b.addEventListener("click", function () {
+        chosenColor = c;
+        colorsWrap.querySelectorAll(".cal-swatch").forEach(function (s) { s.classList.toggle("selected", s === b); });
+      });
+      colorsWrap.appendChild(b);
+    });
+
+    document.addEventListener("click", function (e) {
+      if (e.target.closest("#presence-self-menu")) {
+        nameInput.value = myName;
+        chosenColor = myColor;
+        colorsWrap.querySelectorAll(".cal-swatch").forEach(function (s) { s.classList.toggle("selected", s.style.background === myColor); });
+        panel.hidden = !panel.hidden;
+      }
+    });
+
+    document.getElementById("self-edit-cancel").addEventListener("click", function () { panel.hidden = true; });
+    document.getElementById("self-edit-save").addEventListener("click", function () {
+      var newName = nameInput.value.trim().slice(0, 24);
+      if (!newName) return;
+      var oldId = nameId(myName);
+      myName = newName;
+      myColor = chosenColor;
+      try { localStorage.setItem("relay:name", myName); } catch (e) {}
+      db.doc("roster/" + oldId).delete();
+      db.doc("roster/" + nameId(myName)).set({ name: myName, color: myColor, lastSeen: Date.now() });
+      if (roomRef) roomRef.presence({ name: myName, color: myColor });
+      document.getElementById("home-name").textContent = myName;
+      panel.hidden = true;
+    });
+  }
+
+  // ---------- forum (free board) ----------
+  function initForum(db) {
+    var newBtn = document.getElementById("forum-new-btn");
+    var compose = document.getElementById("forum-compose");
+    var titleInput = document.getElementById("forum-title-input");
+    var bodyInput = document.getElementById("forum-body-input");
+    var submitBtn = document.getElementById("forum-submit-btn");
+    var cancelBtn = document.getElementById("forum-compose-cancel");
+    var postsEl = document.getElementById("forum-posts");
+    var listView = document.getElementById("forum-list-view");
+    var detailView = document.getElementById("forum-detail-view");
+    var backBtn = document.getElementById("forum-back-btn");
+    var detailPostEl = document.getElementById("forum-detail-post");
+    var commentsEl = document.getElementById("forum-comments");
+    var commentInput = document.getElementById("forum-comment-input");
+    var commentBtn = document.getElementById("forum-comment-btn");
+    var col = db.collection("posts");
+    var commentsUnsub = null;
+    var currentPostId = null;
+
+    function preview(body) {
+      var s = (body || "").replace(/\s+/g, " ").trim();
+      return s.length > 90 ? s.slice(0, 90) + "…" : s;
+    }
+
+    col.orderBy("ts", "desc").limit(100).onSnapshot(function (snap) {
+      postsEl.innerHTML = "";
+      if (!snap.docs.length) {
+        postsEl.innerHTML = '<div class="board-empty">아직 글이 없어요. 첫 글을 남겨보세요.</div>';
+        return;
+      }
+      snap.docs.forEach(function (doc) {
+        var p = doc.data();
+        if (!p) return;
+        var card = document.createElement("div");
+        card.className = "forum-post-card";
+        card.innerHTML =
+          '<div class="forum-post-title">' + esc(p.title) + '</div>' +
+          (p.body ? '<div class="forum-post-preview">' + esc(preview(p.body)) + '</div>' : '') +
+          '<div class="forum-post-meta">' + esc(p.author || "익명") + ' · ' + relTime(p.ts || 0) + '</div>';
+        card.addEventListener("click", function () { openPost(doc.id, p); });
+        postsEl.appendChild(card);
+      });
+    }, function () {
+      postsEl.innerHTML = '<div class="board-empty">게시판을 불러오지 못했어요.</div>';
+    });
+
+    function openPost(id, p) {
+      currentPostId = id;
+      listView.hidden = true;
+      detailView.hidden = false;
+      detailPostEl.innerHTML =
+        '<div class="forum-post-title">' + esc(p.title) + '</div>' +
+        '<div class="forum-post-meta">' + esc(p.author || "익명") + ' · ' + relTime(p.ts || 0) + '</div>' +
+        (p.body ? '<div class="forum-post-body">' + esc(p.body) + '</div>' : '');
+      if (commentsUnsub) commentsUnsub();
+      commentsUnsub = db.doc("posts/" + id).collection("comments").orderBy("ts", "asc").limit(300).onSnapshot(function (snap) {
+        commentsEl.innerHTML = "";
+        if (!snap.docs.length) {
+          commentsEl.innerHTML = '<div class="board-empty">아직 댓글이 없어요.</div>';
+          return;
+        }
+        snap.docs.forEach(function (doc) {
+          var c = doc.data();
+          if (!c) return;
+          var row = document.createElement("div");
+          row.className = "forum-comment";
+          row.innerHTML =
+            '<div class="msg-avatar" style="background:' + colorFor(c.author || "?") + '">' + esc(initials(c.author)) + '</div>' +
+            '<div class="msg-body"><div class="msg-head"><span class="msg-author">' + esc(c.author || "익명") + '</span><span class="msg-time mono">' + timeLabel(c.ts) + '</span></div>' +
+            '<div class="msg-text">' + esc(c.text) + '</div></div>';
+          commentsEl.appendChild(row);
+        });
+      }, function () {
+        commentsEl.innerHTML = '<div class="board-empty">댓글을 불러오지 못했어요.</div>';
+      });
+    }
+
+    backBtn.addEventListener("click", function () {
+      detailView.hidden = true;
+      listView.hidden = false;
+      if (commentsUnsub) { commentsUnsub(); commentsUnsub = null; }
+      currentPostId = null;
+    });
+
+    newBtn.addEventListener("click", function () {
+      compose.hidden = !compose.hidden;
+      if (!compose.hidden) titleInput.focus();
+    });
+    cancelBtn.addEventListener("click", function () {
+      compose.hidden = true;
+      titleInput.value = "";
+      bodyInput.value = "";
+    });
+    submitBtn.addEventListener("click", function () {
+      var title = titleInput.value.trim();
+      var body = bodyInput.value.trim();
+      if (!title) return;
+      col.add({ title: title, body: body, author: myName, ts: Date.now() });
+      titleInput.value = "";
+      bodyInput.value = "";
+      compose.hidden = true;
+    });
+
+    function addComment() {
+      var text = commentInput.value.trim();
+      if (!text || !currentPostId) return;
+      commentInput.value = "";
+      db.doc("posts/" + currentPostId).collection("comments").add({ author: myName, text: text, ts: Date.now() });
+    }
+    commentBtn.addEventListener("click", addComment);
+    commentInput.addEventListener("keydown", function (e) { if (e.key === "Enter") addComment(); });
   }
 
   if (myName) boot();
