@@ -1,0 +1,1357 @@
+<title>Relay</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f5f4ef;
+    --surface: #ffffff;
+    --surface-2: #ecebe2;
+    --ink: #1e211d;
+    --muted: #6b7368;
+    --faint: #9aa094;
+    --accent: #2e6f52;
+    --accent-strong: #1f4f3a;
+    --accent-soft: #dce9df;
+    --line: #ded9cd;
+    --danger: #a8482c;
+    --shadow: 0 1px 2px rgba(30, 33, 29, 0.06), 0 8px 24px rgba(30, 33, 29, 0.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151a;
+      --surface: #191e1c;
+      --surface-2: #212722;
+      --ink: #e9ece6;
+      --muted: #8fa093;
+      --faint: #5d6960;
+      --accent: #4fcb8b;
+      --accent-strong: #7fe3ac;
+      --accent-soft: #1e3428;
+      --line: #272d28;
+      --danger: #e08063;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12151a;
+    --surface: #191e1c;
+    --surface-2: #212722;
+    --ink: #e9ece6;
+    --muted: #8fa093;
+    --faint: #5d6960;
+    --accent: #4fcb8b;
+    --accent-strong: #7fe3ac;
+    --accent-soft: #1e3428;
+    --line: #272d28;
+    --danger: #e08063;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, "Malgun Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .brand-font { font-family: "Sora", system-ui, sans-serif; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+  #app {
+    display: grid;
+    grid-template-columns: 248px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ---------- sidebar ---------- */
+  #sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 16px;
+    gap: 22px;
+    min-height: 100vh;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .brand-mark {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: var(--accent);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .brand-mark svg { width: 15px; height: 15px; }
+  .brand-name { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+
+  nav.tabs { display: flex; flex-direction: column; gap: 2px; }
+  .tab-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: none; background: transparent;
+    color: var(--muted);
+    font: inherit; font-size: 13.5px; font-weight: 500;
+    text-align: left; cursor: pointer;
+    transition: background .12s ease, color .12s ease;
+  }
+  .tab-btn svg { width: 16px; height: 16px; flex-shrink: 0; opacity: .85; }
+  .tab-btn:hover { background: var(--surface-2); color: var(--ink); }
+  .tab-btn.active { background: var(--accent-soft); color: var(--accent-strong); font-weight: 600; }
+
+  .side-section { display: flex; flex-direction: column; gap: 9px; }
+  .side-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--faint);
+    padding: 0 2px;
+  }
+  #presence-list { display: flex; flex-direction: column; gap: 6px; }
+  .presence-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 3px 2px;
+    font-size: 13px;
+  }
+  .presence-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0; box-shadow: 0 0 0 2px var(--surface);
+  }
+  .presence-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .presence-you { color: var(--muted); font-size: 11px; }
+
+  .presence-last { font-size: 9.5px; color: var(--faint); flex-shrink: 0; }
+  .dm-btn {
+    border: none; background: none; cursor: pointer; font-size: 12px;
+    padding: 2px 4px; border-radius: 6px; flex-shrink: 0; line-height: 1;
+    opacity: .7;
+  }
+  .dm-btn:hover { background: var(--surface-2); opacity: 1; }
+
+  #conn-pill {
+    margin-top: auto;
+    display: flex; align-items: center; gap: 7px;
+    font-size: 11.5px; color: var(--muted);
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  #conn-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); flex-shrink: 0; }
+  #conn-pill.live #conn-dot { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  /* ---- dm panel ---- */
+  #dm-panel {
+    position: fixed; right: 20px; bottom: 20px; width: 320px; height: 440px;
+    z-index: 40;
+  }
+  #dm-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    box-shadow: var(--shadow); display: flex; flex-direction: column; height: 100%;
+  }
+  #dm-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; border-bottom: 1px solid var(--line); font-weight: 700; font-size: 13px;
+    flex-shrink: 0;
+  }
+  #dm-close { border: none; background: none; font-size: 19px; line-height: 1; cursor: pointer; color: var(--muted); }
+  #dm-close:hover { color: var(--danger); }
+  #dm-note { font-size: 10px; color: var(--faint); padding: 7px 14px 0; flex-shrink: 0; }
+  #dm-feed { flex: 1; overflow-y: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 10px; }
+  #dm-composer { display: flex; gap: 6px; padding: 10px 14px; border-top: 1px solid var(--line); flex-shrink: 0; }
+  #dm-input {
+    flex: 1; border: 1px solid var(--line); border-radius: 9px; padding: 8px 11px;
+    font: inherit; font-size: 13px; background: var(--surface); color: var(--ink);
+  }
+  #dm-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+  /* ---------- main ---------- */
+  #main { display: flex; flex-direction: column; min-height: 100vh; min-width: 0; }
+  #header {
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: baseline; gap: 10px;
+    flex-shrink: 0;
+  }
+  #view-title { font-size: 15.5px; font-weight: 700; }
+  #view-desc { font-size: 12.5px; color: var(--muted); }
+
+  .view { display: none; flex: 1; min-height: 0; flex-direction: column; }
+  .view.active { display: flex; }
+
+  /* ---- chat ---- */
+  #chat-feed {
+    flex: 1; overflow-y: auto;
+    padding: 20px 28px 8px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .msg { display: flex; gap: 10px; max-width: 640px; }
+  .msg-avatar {
+    width: 30px; height: 30px; border-radius: 8px;
+    flex-shrink: 0; display: grid; place-items: center;
+    font-size: 12px; font-weight: 600; color: #fff;
+  }
+  .msg-body { min-width: 0; }
+  .msg-head { display: flex; align-items: baseline; gap: 7px; margin-bottom: 2px; }
+  .msg-author { font-size: 13px; font-weight: 600; }
+  .msg-time { font-size: 10.5px; color: var(--faint); }
+  .msg-text {
+    font-size: 13.5px; line-height: 1.55;
+    background: var(--surface-2);
+    border-radius: 4px 10px 10px 10px;
+    padding: 8px 12px;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .msg.bot .msg-avatar { background: var(--accent); }
+  .msg.bot .msg-text { background: var(--accent-soft); border: 1px solid var(--line); }
+  .msg.system { max-width: 100%; justify-content: center; }
+  .msg.system .msg-text {
+    background: transparent; color: var(--faint); font-size: 11.5px;
+    padding: 2px 0; text-align: center;
+  }
+  .msg-thinking { color: var(--muted); font-style: italic; }
+
+  .msg.task .msg-avatar { background: #3a6ea5; }
+  .task-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: .02em;
+    padding: 2px 8px; border-radius: 999px; margin-bottom: 6px;
+  }
+  .task-pill.pending { background: var(--surface-2); color: var(--muted); }
+  .task-pill.done { background: var(--accent-soft); color: var(--accent-strong); }
+  .task-pill svg { width: 10px; height: 10px; }
+  .task-result {
+    margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line);
+    font-size: 13px; white-space: pre-wrap; word-break: break-word;
+  }
+
+  #composer {
+    padding: 14px 28px 20px;
+    border-top: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  #composer-hint { font-size: 11px; color: var(--faint); margin-bottom: 7px; }
+  #composer-hint b { color: var(--accent-strong); font-weight: 600; }
+  .composer-row { display: flex; gap: 8px; }
+  #chat-input {
+    flex: 1; resize: none;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 10px 13px;
+    font: inherit; font-size: 13.5px;
+    line-height: 1.4;
+    max-height: 120px;
+  }
+  #chat-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .send-btn {
+    border: none; border-radius: 10px;
+    background: var(--accent); color: #fff;
+    padding: 0 18px; font: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background .12s ease;
+  }
+  .send-btn:hover { background: var(--accent-strong); }
+  .send-btn:disabled { background: var(--faint); cursor: not-allowed; }
+
+  /* ---- board ---- */
+  #board-wrap { flex: 1; overflow-y: auto; padding: 22px 28px 28px; }
+  #board-add { display: flex; gap: 8px; margin-bottom: 18px; max-width: 560px; }
+  #board-input {
+    flex: 1; border: 1px solid var(--line); background: var(--surface);
+    color: var(--ink); border-radius: 9px; padding: 9px 12px;
+    font: inherit; font-size: 13.5px;
+  }
+  #board-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .board-add-btn {
+    border: 1px solid var(--accent); background: var(--accent-soft);
+    color: var(--accent-strong); border-radius: 9px;
+    padding: 0 16px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .board-add-btn:hover { background: var(--accent); color: #fff; }
+
+  .board-group { max-width: 560px; margin-bottom: 22px; }
+  .board-group-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 8px;
+  }
+  .board-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 4px; border-bottom: 1px solid var(--line);
+  }
+  .board-item:last-child { border-bottom: none; }
+  .board-check {
+    width: 18px; height: 18px; border-radius: 5px; margin-top: 1px;
+    border: 1.5px solid var(--muted); flex-shrink: 0; cursor: pointer;
+    background: var(--surface); display: grid; place-items: center;
+  }
+  .board-check.done { background: var(--accent); border-color: var(--accent); }
+  .board-check.done svg { width: 11px; height: 11px; stroke: #fff; }
+  .board-text-wrap { flex: 1; min-width: 0; }
+  .board-text { font-size: 13.5px; line-height: 1.4; word-break: break-word; }
+  .board-item.done .board-text { color: var(--faint); text-decoration: line-through; }
+  .board-meta { font-size: 10.5px; color: var(--faint); margin-top: 2px; }
+  .board-del {
+    border: none; background: none; color: var(--faint); cursor: pointer;
+    font-size: 15px; line-height: 1; padding: 2px 4px; flex-shrink: 0;
+  }
+  .board-del:hover { color: var(--danger); }
+  .board-edit {
+    border: none; background: none; color: var(--faint); cursor: pointer;
+    font-size: 12.5px; line-height: 1; padding: 2px 4px; flex-shrink: 0;
+  }
+  .board-edit:hover { color: var(--accent-strong); }
+  .board-edit-input {
+    width: 100%; font: inherit; font-size: 13.5px; border: 1px solid var(--accent);
+    border-radius: 6px; padding: 4px 7px; background: var(--surface); color: var(--ink);
+  }
+  .board-edit-input:focus { outline: none; }
+  .board-empty { color: var(--faint); font-size: 12.5px; padding: 4px; }
+
+  /* ---- calendar ---- */
+  #cal-wrap { flex: 1; overflow-y: auto; padding: 22px 28px 28px; }
+  #cal-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+  #cal-title { font-size: 15px; font-weight: 700; min-width: 128px; }
+  .cal-nav {
+    width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--muted); cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .cal-nav:hover { background: var(--surface-2); color: var(--ink); }
+  .cal-nav svg { width: 14px; height: 14px; }
+  .cal-today-btn {
+    border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+    border-radius: 7px; padding: 5px 11px; font: inherit; font-size: 12px;
+    font-weight: 600; cursor: pointer; margin-left: auto;
+  }
+  .cal-today-btn:hover { background: var(--surface-2); color: var(--ink); }
+
+  #cal-grid-wrap { position: relative; max-width: 700px; }
+  #cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  }
+  #cal-bars { position: absolute; inset: 0; pointer-events: none; }
+  .cal-dow {
+    background: var(--surface-2); font-size: 10.5px; font-weight: 600;
+    color: var(--muted); text-align: center; padding: 7px 0;
+    letter-spacing: .04em;
+  }
+  .cal-cell {
+    min-height: 84px; padding: 6px 7px; border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line); background: var(--surface);
+    cursor: pointer; display: flex; flex-direction: column; gap: 3px;
+  }
+  .cal-cell:nth-child(7n+1) { border-left: none; }
+  .cal-cell.other-month { background: var(--bg); }
+  .cal-cell.other-month .cal-daynum { color: var(--faint); }
+  .cal-cell:hover { background: var(--surface-2); }
+  .cal-cell.selected { background: var(--accent-soft); }
+  .cal-daynum {
+    font-size: 12px; font-weight: 600; font-family: "IBM Plex Mono", monospace;
+    width: 20px; height: 20px; display: grid; place-items: center; border-radius: 6px;
+  }
+  .cal-cell.today .cal-daynum { background: var(--accent); color: #fff; }
+  .cal-bar-spacer { height: 27px; flex-shrink: 0; }
+  .cal-dots { display: flex; flex-wrap: wrap; gap: 3px; margin-top: auto; }
+  .cal-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .cal-more { font-size: 9.5px; color: var(--faint); }
+
+  .cal-bar {
+    position: absolute; height: 11px; border-radius: 4px;
+    font-size: 9.5px; font-weight: 600; color: #fff; line-height: 11px;
+    padding: 0 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    box-sizing: border-box; pointer-events: auto; cursor: default;
+  }
+
+  #cal-day-panel {
+    max-width: 460px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line);
+  }
+  #cal-day-label { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+  #cal-color-picker { display: flex; align-items: center; gap: 7px; margin-bottom: 9px; }
+  .cal-swatch {
+    width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent;
+    cursor: pointer; padding: 0; flex-shrink: 0;
+  }
+  .cal-swatch.selected { border-color: var(--ink); }
+  #cal-edit-tag {
+    font-size: 10.5px; font-weight: 600; color: var(--accent-strong);
+    background: var(--accent-soft); padding: 2px 8px; border-radius: 999px; margin-left: 4px;
+  }
+  #cal-event-cancel-btn {
+    border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+    border-radius: 9px; padding: 0 14px; font: inherit; font-size: 13px; cursor: pointer;
+  }
+  #cal-event-cancel-btn:hover { background: var(--surface-2); }
+  #cal-day-add { display: flex; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+  .cal-event-edit {
+    border: none; background: none; color: var(--faint); cursor: pointer;
+    font-size: 12.5px; line-height: 1; padding: 2px 4px; flex-shrink: 0;
+  }
+  .cal-event-edit:hover { color: var(--accent-strong); }
+  #cal-event-input {
+    flex: 1; min-width: 160px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    border-radius: 9px; padding: 9px 12px; font: inherit; font-size: 13.5px;
+  }
+  #cal-event-end {
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    border-radius: 9px; padding: 9px 10px; font: inherit; font-size: 12.5px; width: 132px;
+  }
+  #cal-event-input:focus, #cal-event-end:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  #cal-day-add-hint { font-size: 10.5px; color: var(--faint); margin-bottom: 12px; }
+  #cal-event-list { display: flex; flex-direction: column; }
+  .cal-event-row {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 8px 4px; border-bottom: 1px solid var(--line);
+  }
+  .cal-event-row:last-child { border-bottom: none; }
+  .cal-event-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-top: 6px; flex-shrink: 0; }
+  .cal-event-text { flex: 1; font-size: 13.5px; line-height: 1.4; word-break: break-word; }
+  .cal-event-meta { font-size: 10.5px; color: var(--faint); margin-top: 2px; }
+  .cal-event-range { font-size: 10.5px; color: var(--accent-strong); font-weight: 600; margin-top: 2px; }
+
+  /* ---- home ---- */
+  #home-wrap { flex: 1; overflow-y: auto; padding: 28px 32px 32px; max-width: 640px; }
+  #home-wrap h1 { font-size: 19px; font-weight: 700; margin: 0 0 4px; font-family: "Sora", sans-serif; }
+  #home-wrap > p.home-lede { font-size: 13px; color: var(--muted); margin: 0 0 22px; line-height: 1.6; }
+  .home-cards { display: flex; flex-direction: column; gap: 12px; }
+  .home-card {
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    background: var(--surface); display: flex; gap: 12px; align-items: flex-start;
+  }
+  .home-card-icon {
+    width: 30px; height: 30px; border-radius: 8px; background: var(--accent-soft);
+    color: var(--accent-strong); display: grid; place-items: center; flex-shrink: 0;
+  }
+  .home-card-icon svg { width: 16px; height: 16px; }
+  .home-card h3 { font-size: 13.5px; font-weight: 700; margin: 0 0 3px; }
+  .home-card p { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin: 0; }
+  .home-card code {
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px;
+    background: var(--surface-2); padding: 1px 5px; border-radius: 4px; color: var(--accent-strong);
+  }
+
+  /* ---- name gate ---- */
+  #gate {
+    position: fixed; inset: 0; background: rgba(18, 21, 26, 0.55);
+    display: grid; place-items: center; z-index: 50; backdrop-filter: blur(2px);
+  }
+  #gate-card {
+    background: var(--surface); border-radius: 14px; padding: 26px 26px 22px;
+    width: min(320px, 88vw); box-shadow: var(--shadow); border: 1px solid var(--line);
+  }
+  #gate-card h2 { font-size: 16px; margin: 0 0 4px; }
+  #gate-card p { font-size: 12.5px; color: var(--muted); margin: 0 0 16px; line-height: 1.5; }
+  #gate-input {
+    width: 100%; border: 1px solid var(--line); border-radius: 9px;
+    padding: 9px 12px; font: inherit; font-size: 13.5px;
+    background: var(--bg); color: var(--ink); margin-bottom: 12px;
+  }
+  #gate-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  #gate-btn {
+    width: 100%; border: none; border-radius: 9px; padding: 10px;
+    background: var(--accent); color: #fff; font: inherit; font-size: 13.5px;
+    font-weight: 600; cursor: pointer;
+  }
+  #gate-btn:hover { background: var(--accent-strong); }
+  [hidden] { display: none !important; }
+
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 5px; }
+
+  @media (max-width: 640px) {
+    #app { grid-template-columns: 1fr; }
+    #sidebar { display: none; }
+  }
+</style>
+
+<div id="gate">
+  <div id="gate-card">
+    <h2 class="brand-font">Relay에 오신 걸 환영해요</h2>
+    <p>팀원들에게 보여질 이름을 입력하면 바로 시작할 수 있어요.</p>
+    <input id="gate-input" type="text" placeholder="예: 김영준" maxlength="24" autocomplete="off" />
+    <button id="gate-btn">시작하기</button>
+  </div>
+</div>
+
+<div id="app">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 12c0-4.4 3.6-8 8-8m8 8c0 4.4-3.6 8-8 8M4 12l3-3m-3 3l3 3m16-3l-3-3m3 3l-3 3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <div class="brand-name brand-font">Relay</div>
+        <div class="brand-sub">사내망 팀 채널</div>
+      </div>
+    </div>
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-view="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5L12 4l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/></svg>
+        홈
+      </button>
+      <button class="tab-btn" data-view="chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+        채팅
+      </button>
+      <button class="tab-btn" data-view="board">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        보드
+      </button>
+      <button class="tab-btn" data-view="cal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>
+        달력
+      </button>
+    </nav>
+
+    <div class="side-section">
+      <div class="side-label">지금 접속 중</div>
+      <div id="presence-list"></div>
+    </div>
+
+    <div class="side-section">
+      <div class="side-label">오프라인</div>
+      <div id="presence-offline-list"></div>
+    </div>
+
+    <div id="conn-pill"><span id="conn-dot"></span><span id="conn-text">연결 확인 중</span></div>
+  </aside>
+
+  <main id="main">
+    <header id="header">
+      <div>
+        <div id="view-title">홈</div>
+        <div id="view-desc">Relay를 어떻게 쓰면 되는지 한눈에 볼 수 있어요.</div>
+      </div>
+    </header>
+
+    <section id="view-home" class="view active">
+      <div id="home-wrap">
+        <h1 class="brand-font">환영해요, <span id="home-name"></span> 님 👋</h1>
+        <p class="home-lede">Relay는 사내망에서 막힌 Slack 대신 쓰는 팀 채널이에요. 아래 카드대로 따라 하면 바로 쓸 수 있어요.</p>
+        <div class="home-cards">
+          <div class="home-card">
+            <div class="home-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div>
+            <div><h3>채팅</h3><p>팀원들과 실시간으로 대화해요. <code>/ask 질문</code>을 쓰면 Claude가 그 자리에서 답하고, <code>/github 요청</code>을 쓰면 GitHub 작업 목록에 올라가 담당 세션이 확인 후 처리해요.</p></div>
+          </div>
+          <div class="home-card">
+            <div class="home-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+            <div><h3>보드</h3><p>팀이 함께 챙기는 할 일 목록이에요. 누구나 항목을 추가하고, 체크하고, 연필 아이콘으로 내용을 고칠 수 있어요.</p></div>
+          </div>
+          <div class="home-card">
+            <div class="home-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></div>
+            <div><h3>달력</h3><p>날짜를 클릭해서 일정을 남겨요. 종료일을 함께 고르면 며칠씩 이어지는 기간 일정이 색깔 띠로 표시되고, 색상도 골라 구분할 수 있어요. 이미 만든 일정도 목록에서 연필 아이콘으로 언제든 고칠 수 있어요.</p></div>
+          </div>
+          <div class="home-card">
+            <div class="home-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg></div>
+            <div><h3>팀원 현황</h3><p>왼쪽 사이드바에서 지금 접속 중인 팀원과 오프라인인 팀원을 볼 수 있어요. 이름 옆 💬 버튼을 누르면 그 팀원과 1:1로 대화할 수 있어요 (완전한 비공개 DM은 아니고, 팀 내부에서 공유되는 대화예요).</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-chat" class="view">
+      <div id="chat-feed"></div>
+      <div id="composer">
+        <div id="composer-hint"><b class="mono">/ask 질문</b>은 Claude가 즉시 답하고, <b class="mono">/github 요청</b>은 GitHub 작업 목록에 올라가 담당 세션이 확인 후 처리해요 (몇 분 정도 걸릴 수 있어요).</div>
+        <div class="composer-row">
+          <textarea id="chat-input" rows="1" placeholder="메시지를 입력하세요..."></textarea>
+          <button class="send-btn" id="chat-send">보내기</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-board" class="view">
+      <div id="board-wrap">
+        <div id="board-add">
+          <input id="board-input" type="text" placeholder="새 항목 추가 (예: 파일럿 참여자 초대)" maxlength="140" />
+          <button class="board-add-btn" id="board-add-btn">추가</button>
+        </div>
+        <div class="board-group">
+          <div class="board-group-label">진행 중</div>
+          <div id="board-open" class="board-empty">불러오는 중...</div>
+        </div>
+        <div class="board-group">
+          <div class="board-group-label">완료</div>
+          <div id="board-done" class="board-empty"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-cal" class="view">
+      <div id="cal-wrap">
+        <div id="cal-header">
+          <button class="cal-nav" id="cal-prev" aria-label="이전 달"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div id="cal-title" class="mono"></div>
+          <button class="cal-nav" id="cal-next" aria-label="다음 달"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+          <button class="cal-today-btn" id="cal-today">오늘</button>
+        </div>
+        <div id="cal-grid-wrap">
+          <div id="cal-grid"></div>
+          <div id="cal-bars"></div>
+        </div>
+        <div id="cal-day-panel">
+          <div id="cal-day-label"></div>
+          <div id="cal-color-picker">
+            <button class="cal-swatch selected" data-color="" style="background:var(--accent)" title="기본"></button>
+            <button class="cal-swatch" data-color="#d9a520" style="background:#d9a520" title="노랑"></button>
+            <button class="cal-swatch" data-color="#3a6ea5" style="background:#3a6ea5" title="파랑"></button>
+            <button class="cal-swatch" data-color="#b5432c" style="background:#b5432c" title="빨강"></button>
+            <button class="cal-swatch" data-color="#7a4fa5" style="background:#7a4fa5" title="보라"></button>
+            <button class="cal-swatch" data-color="#4f9ea5" style="background:#4f9ea5" title="청록"></button>
+            <span id="cal-edit-tag" hidden>수정 중</span>
+          </div>
+          <div id="cal-day-add">
+            <input id="cal-event-input" type="text" placeholder="이 날짜에 일정 추가 (예: 오후 2시 파일럿 회고)" maxlength="140" />
+            <input id="cal-event-end" type="date" />
+            <button class="board-add-btn" id="cal-event-add-btn">추가</button>
+            <button id="cal-event-cancel-btn" hidden>취소</button>
+          </div>
+          <div id="cal-day-add-hint">종료일을 고르면 선택한 날짜부터 종료일까지 이어지는 기간 일정으로 등록돼요. 목록의 연필 아이콘으로 나중에 고칠 수 있어요.</div>
+          <div id="cal-event-list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="dm-panel" hidden>
+  <div id="dm-card">
+    <div id="dm-header"><span id="dm-title"></span><button id="dm-close" aria-label="닫기">×</button></div>
+    <div id="dm-note">이 대화는 팀 내부에서 공유돼요. 완전한 비공개 DM은 아니에요.</div>
+    <div id="dm-feed"></div>
+    <div id="dm-composer">
+      <input id="dm-input" type="text" placeholder="메시지 입력..." maxlength="500" />
+      <button class="send-btn" id="dm-send">전송</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- identity ----------
+  var PALETTE = ["#2e6f52", "#3a6ea5", "#a5623a", "#7a4fa5", "#a53a6e", "#4f9ea5"];
+  function colorFor(name) {
+    var h = 0;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+    return PALETTE[h % PALETTE.length];
+  }
+  function initials(name) {
+    return (name || "?").trim().slice(0, 2).toUpperCase();
+  }
+  function esc(s) {
+    var d = document.createElement("div");
+    d.textContent = s == null ? "" : String(s);
+    return d.innerHTML;
+  }
+  function timeLabel(ts) {
+    var d = new Date(ts);
+    var h = d.getHours(), m = d.getMinutes();
+    return (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m);
+  }
+
+  var myName = null;
+  var myColor = null;
+  try { myName = localStorage.getItem("relay:name"); } catch (e) {}
+
+  var gate = document.getElementById("gate");
+  var gateInput = document.getElementById("gate-input");
+  var gateBtn = document.getElementById("gate-btn");
+
+  function nameId(name) {
+    var h = 0;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+    return h.toString(36);
+  }
+  function relTime(ts) {
+    var min = Math.floor((Date.now() - ts) / 60000);
+    if (min < 1) return "방금 전";
+    if (min < 60) return min + "분 전";
+    var hr = Math.floor(min / 60);
+    if (hr < 24) return hr + "시간 전";
+    return Math.floor(hr / 24) + "일 전";
+  }
+
+  function enter(name) {
+    myName = name.trim().slice(0, 24) || "익명";
+    myColor = colorFor(myName);
+    try { localStorage.setItem("relay:name", myName); } catch (e) {}
+    gate.hidden = true;
+    boot();
+  }
+  gateBtn.addEventListener("click", function () {
+    if (gateInput.value.trim()) enter(gateInput.value);
+  });
+  gateInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && gateInput.value.trim()) enter(gateInput.value);
+  });
+
+  if (myName) {
+    myColor = colorFor(myName);
+    gate.hidden = true;
+  } else {
+    gateInput.focus();
+  }
+
+  // ---------- tabs ----------
+  var tabBtns = document.querySelectorAll(".tab-btn");
+  var titles = {
+    home: ["홈", "Relay를 어떻게 쓰면 되는지 한눈에 볼 수 있어요."],
+    chat: ["채팅", '팀 대화. <b class="mono" style="color:var(--accent-strong)">/ask</b>로 Claude에게 바로 묻고, <b class="mono" style="color:var(--accent-strong)">/github</b>로 저장소 작업을 맡길 수 있어요.'],
+    board: ["보드", "팀이 함께 챙기는 할 일 목록. 아무나 추가하고 체크할 수 있어요."],
+    cal: ["달력", "팀 일정을 날짜에 남겨두는 공유 달력이에요. 날짜를 클릭하면 일정을 추가할 수 있어요."],
+  };
+  tabBtns.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      tabBtns.forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      document.querySelectorAll(".view").forEach(function (v) { v.classList.remove("active"); });
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+      var t = titles[btn.dataset.view];
+      document.getElementById("view-title").textContent = t[0];
+      document.getElementById("view-desc").innerHTML = t[1];
+    });
+  });
+
+  // ---------- boot: capabilities ----------
+  function boot() {
+    document.getElementById("home-name").textContent = myName;
+    if (!window.claude || !window.claude.use) { renderNoCapabilities(); return; }
+
+    Promise.all([
+      window.claude.use("db").catch(function () { return null; }),
+      window.claude.use("room").catch(function () { return null; }),
+      window.claude.use("sample").catch(function () { return null; }),
+    ]).then(function (r) {
+      var db = r[0], room = r[1], sample = r[2];
+      if (db) initChat(db, sample); else document.getElementById("chat-feed").innerHTML =
+        '<div class="msg system"><div class="msg-text">이 화면에서는 저장 기능을 쓸 수 없어요. Claude 아티팩트로 열어주세요.</div></div>';
+      if (db) initBoard(db); else document.getElementById("board-open").textContent = "이 화면에서는 보드를 쓸 수 없어요.";
+      if (db) initCalendar(db); else document.getElementById("cal-grid").textContent = "이 화면에서는 달력을 쓸 수 없어요.";
+      if (db) initDM(db);
+      if (db) initPresence(db, room); else renderPresenceFallback();
+    });
+  }
+
+  function renderNoCapabilities() {
+    document.getElementById("chat-feed").innerHTML =
+      '<div class="msg system"><div class="msg-text">Claude 아티팩트로 열어야 실시간 기능이 동작해요.</div></div>';
+    renderPresenceFallback();
+  }
+  function renderPresenceFallback() {
+    var list = document.getElementById("presence-list");
+    list.innerHTML = "";
+    var row = document.createElement("div");
+    row.className = "presence-row";
+    row.innerHTML = '<span class="presence-dot" style="background:' + myColor + '"></span><span class="presence-name">' + esc(myName) + '</span><span class="presence-you">나</span>';
+    list.appendChild(row);
+  }
+
+  // ---------- presence: roster (online + offline) + DM entry points ----------
+  function initPresence(db, room) {
+    var onlineList = document.getElementById("presence-list");
+    var offlineList = document.getElementById("presence-offline-list");
+    var rosterCol = db.collection("roster");
+    var myId = nameId(myName);
+
+    var latestPeers = null; // null until room reports at least once
+    var roster = [];        // roster docs
+
+    function dmBtn(name) {
+      return name === myName ? "" : '<button class="dm-btn" data-name="' + esc(name) + '" title="' + esc(name) + '님과 대화">💬</button>';
+    }
+
+    function renderAll() {
+      var onlineIds = {};
+      onlineList.innerHTML = "";
+      if (latestPeers && latestPeers.length) {
+        latestPeers.forEach(function (p) {
+          var pn = (p.presence && p.presence.name) || (p.isMe ? myName : "누군가");
+          var pc = (p.presence && p.presence.color) || colorFor(String(pn));
+          onlineIds[nameId(String(pn))] = true;
+          var row = document.createElement("div");
+          row.className = "presence-row";
+          row.innerHTML =
+            '<span class="presence-dot" style="background:' + pc + '"></span>' +
+            '<span class="presence-name">' + esc(pn) + '</span>' +
+            (p.isMe ? '<span class="presence-you">나</span>' : dmBtn(String(pn)));
+          onlineList.appendChild(row);
+        });
+      } else {
+        onlineIds[myId] = true;
+        var row = document.createElement("div");
+        row.className = "presence-row";
+        row.innerHTML = '<span class="presence-dot" style="background:' + myColor + '"></span><span class="presence-name">' + esc(myName) + '</span><span class="presence-you">나</span>';
+        onlineList.appendChild(row);
+      }
+
+      offlineList.innerHTML = "";
+      var offline = roster.filter(function (d) { return !onlineIds[d.id]; });
+      if (!offline.length) {
+        offlineList.innerHTML = '<div class="board-empty" style="padding:2px">아무도 없어요</div>';
+      } else {
+        offline.sort(function (a, b) { return (b.data.lastSeen || 0) - (a.data.lastSeen || 0); });
+        offline.forEach(function (d) {
+          var row = document.createElement("div");
+          row.className = "presence-row";
+          row.innerHTML =
+            '<span class="presence-dot" style="background:var(--faint)"></span>' +
+            '<span class="presence-name" style="color:var(--muted)">' + esc(d.data.name) + '</span>' +
+            '<span class="presence-last">' + relTime(d.data.lastSeen || 0) + '</span>' +
+            dmBtn(d.data.name);
+          offlineList.appendChild(row);
+        });
+      }
+    }
+
+    rosterCol.orderBy("lastSeen", "desc").limit(200).onSnapshot(function (snap) {
+      roster = snap.docs.filter(function (d) { return d.data() && d.data().name !== myName; }).map(function (d) { return { id: d.id, data: d.data() }; });
+      renderAll();
+    }, function () { /* roster unavailable: online list still works */ });
+
+    function touchRoster() {
+      db.doc("roster/" + myId).set({ name: myName, color: myColor, lastSeen: Date.now() });
+    }
+    touchRoster();
+    setInterval(touchRoster, 90000);
+
+    var pill = document.getElementById("conn-pill");
+    var text = document.getElementById("conn-text");
+    if (room) {
+      room.presence({ name: myName, color: myColor });
+      room.onPeers(function (change) { latestPeers = change.peers; renderAll(); }, function () { latestPeers = null; renderAll(); });
+      room.onConnection(function (c) {
+        pill.classList.toggle("live", c);
+        text.textContent = c ? "실시간 연결됨" : "연결 대기 중";
+      });
+    } else {
+      renderAll();
+      text.textContent = "실시간 접속 정보 없음";
+    }
+  }
+
+  // ---------- DM ----------
+  var dmOpen = null;
+  function initDM(db) {
+    var panel = document.getElementById("dm-panel");
+    var titleEl = document.getElementById("dm-title");
+    var feed = document.getElementById("dm-feed");
+    var input = document.getElementById("dm-input");
+    var sendBtn = document.getElementById("dm-send");
+    var closeBtn = document.getElementById("dm-close");
+    var unsub = null;
+    var otherName = null;
+
+    function convoId(a, b) {
+      var ids = [nameId(a), nameId(b)].sort();
+      return ids[0] + "_" + ids[1];
+    }
+
+    function renderDM(snap) {
+      feed.innerHTML = "";
+      snap.docs.forEach(function (doc) {
+        var m = doc.data();
+        if (!m) return;
+        var mine = m.author === myName;
+        var el = document.createElement("div");
+        el.className = "msg" + (mine ? "" : "");
+        el.innerHTML =
+          '<div class="msg-avatar" style="background:' + esc(mine ? myColor : colorFor(m.author || "?")) + '">' + esc(initials(m.author)) + '</div>' +
+          '<div class="msg-body">' +
+            '<div class="msg-head"><span class="msg-author">' + esc(m.author || "익명") + '</span><span class="msg-time mono">' + timeLabel(m.ts) + '</span></div>' +
+            '<div class="msg-text">' + esc(m.text) + '</div>' +
+          '</div>';
+        feed.appendChild(el);
+      });
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    dmOpen = function (name) {
+      otherName = name;
+      titleEl.textContent = name + " 님과의 대화";
+      panel.hidden = false;
+      if (unsub) unsub();
+      var col = db.doc("dms/" + convoId(myName, name)).collection("messages");
+      unsub = col.orderBy("ts", "asc").limit(200).onSnapshot(renderDM, function () {
+        feed.innerHTML = '<div class="msg system"><div class="msg-text">대화를 불러오지 못했어요.</div></div>';
+      });
+      input.focus();
+    };
+
+    closeBtn.addEventListener("click", function () {
+      panel.hidden = true;
+      if (unsub) { unsub(); unsub = null; }
+    });
+
+    function send() {
+      var text = input.value.trim();
+      if (!text || !otherName) return;
+      input.value = "";
+      db.doc("dms/" + convoId(myName, otherName)).collection("messages").add({ author: myName, text: text, ts: Date.now() });
+    }
+    sendBtn.addEventListener("click", send);
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") send(); });
+
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest(".dm-btn");
+      if (btn) dmOpen(btn.dataset.name);
+    });
+  }
+
+  // ---------- chat ----------
+  function initChat(db, sample) {
+    var feed = document.getElementById("chat-feed");
+    var input = document.getElementById("chat-input");
+    var sendBtn = document.getElementById("chat-send");
+    var col = db.collection("messages");
+
+    function renderMessages(snap) {
+      var atBottom = feed.scrollTop + feed.clientHeight >= feed.scrollHeight - 40;
+      feed.innerHTML = "";
+      snap.docs.forEach(function (doc) {
+        var m = doc.data();
+        if (!m) return;
+        var el = document.createElement("div");
+        if (m.kind === "system") {
+          el.className = "msg system";
+          el.innerHTML = '<div class="msg-text">' + esc(m.text) + '</div>';
+        } else if (m.kind === "task") {
+          el.className = "msg task";
+          var pending = m.status !== "done";
+          var pill = pending
+            ? '<span class="task-pill pending">⏳ 대기 중</span>'
+            : '<span class="task-pill done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>완료</span>';
+          el.innerHTML =
+            '<div class="msg-avatar" style="background:#3a6ea5">⚙</div>' +
+            '<div class="msg-body">' +
+              '<div class="msg-head"><span class="msg-author">' + esc(m.author || "익명") + '</span><span class="msg-time mono">' + timeLabel(m.ts) + '</span></div>' +
+              '<div class="msg-text">' + pill + '<br>' + esc(m.text) +
+              (m.result ? '<div class="task-result">' + esc(m.result) + '</div>' : '') +
+              '</div>' +
+            '</div>';
+        } else {
+          var isBot = m.kind === "bot";
+          el.className = "msg" + (isBot ? " bot" : "");
+          var color = isBot ? "" : "background:" + esc(m.color || colorFor(m.author || "?"));
+          el.innerHTML =
+            '<div class="msg-avatar" style="' + color + '">' + (isBot ? "🛰" : esc(initials(m.author))) + '</div>' +
+            '<div class="msg-body">' +
+              '<div class="msg-head"><span class="msg-author">' + esc(m.author || "익명") + '</span><span class="msg-time mono">' + timeLabel(m.ts) + '</span></div>' +
+              '<div class="msg-text' + (m.pending ? ' msg-thinking' : '') + '">' + esc(m.text) + '</div>' +
+            '</div>';
+        }
+        feed.appendChild(el);
+      });
+      if (atBottom) feed.scrollTop = feed.scrollHeight;
+    }
+
+    col.orderBy("ts", "asc").limit(200).onSnapshot(renderMessages, function () {
+      feed.innerHTML = '<div class="msg system"><div class="msg-text">채팅을 불러오지 못했어요. 새로고침해보세요.</div></div>';
+    });
+
+    function autoGrow() {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 120) + "px";
+    }
+    input.addEventListener("input", autoGrow);
+
+    function send() {
+      var text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      autoGrow();
+      col.add({ author: myName, color: myColor, text: text, kind: "text", ts: Date.now() });
+
+      if (text.toLowerCase().indexOf("/ask") === 0) {
+        var question = text.slice(4).trim();
+        if (!question) return;
+        if (!sample) {
+          col.add({ kind: "system", text: "이 화면에서는 Claude 호출을 쓸 수 없어요.", ts: Date.now() });
+          return;
+        }
+        col.add({ author: myName, text: question + " 에 대해 생각하는 중...", kind: "bot", pending: true, ts: Date.now() }).then(function (ref) {
+          sample(question).then(function (res) {
+            ref.set({ author: "Claude", text: res.text, kind: "bot", ts: Date.now() });
+          }, function (err) {
+            var msg = err && err.code === "not_granted"
+              ? "이 브라우저에서는 Claude 호출이 허용되지 않았어요."
+              : "답변을 가져오지 못했어요 (" + (err && err.code || "오류") + ").";
+            ref.set({ author: "Claude", text: msg, kind: "bot", ts: Date.now() });
+          });
+        });
+      } else if (text.toLowerCase().indexOf("/github") === 0) {
+        var request = text.slice(7).trim();
+        if (!request) return;
+        col.add({
+          author: myName, text: request, kind: "task", status: "pending", ts: Date.now(),
+        });
+      }
+    }
+    sendBtn.addEventListener("click", send);
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+    });
+  }
+
+  // ---------- board ----------
+  function initBoard(db) {
+    var addInput = document.getElementById("board-input");
+    var addBtn = document.getElementById("board-add-btn");
+    var openWrap = document.getElementById("board-open");
+    var doneWrap = document.getElementById("board-done");
+    var col = db.collection("board_items");
+
+    function itemRow(doc) {
+      var it = doc.data();
+      var row = document.createElement("div");
+      row.className = "board-item" + (it.done ? " done" : "");
+      row.innerHTML =
+        '<span class="board-check' + (it.done ? " done" : "") + '"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>' +
+        '<div class="board-text-wrap"><div class="board-text">' + esc(it.text) + '</div>' +
+        '<div class="board-meta">' + esc(it.owner || "") + '</div></div>' +
+        '<button class="board-edit" title="수정">✎</button>' +
+        '<button class="board-del" title="삭제">×</button>';
+      row.querySelector(".board-check").addEventListener("click", function () {
+        db.doc(doc.id ? "board_items/" + doc.id : "").update({ done: !it.done });
+      });
+      row.querySelector(".board-del").addEventListener("click", function () {
+        db.doc("board_items/" + doc.id).delete();
+      });
+      row.querySelector(".board-edit").addEventListener("click", function () {
+        var wrap = row.querySelector(".board-text-wrap");
+        wrap.innerHTML = '<input class="board-edit-input" type="text" maxlength="140" />';
+        var editInput = wrap.querySelector("input");
+        editInput.value = it.text;
+        editInput.focus();
+        editInput.select();
+        function commit() {
+          var v = editInput.value.trim();
+          if (v && v !== it.text) db.doc("board_items/" + doc.id).update({ text: v });
+          else wrap.innerHTML = '<div class="board-text">' + esc(it.text) + '</div><div class="board-meta">' + esc(it.owner || "") + '</div>';
+        }
+        editInput.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") { e.preventDefault(); commit(); }
+          if (e.key === "Escape") { editInput.value = it.text; editInput.blur(); }
+        });
+        editInput.addEventListener("blur", commit);
+      });
+      return row;
+    }
+
+    col.orderBy("ts", "desc").limit(200).onSnapshot(function (snap) {
+      var open = [], done = [];
+      snap.docs.forEach(function (d) { (d.data().done ? done : open).push(d); });
+      openWrap.innerHTML = "";
+      if (!open.length) openWrap.innerHTML = '<div class="board-empty">아직 없어요. 위에서 추가해보세요.</div>';
+      open.forEach(function (d) { openWrap.appendChild(itemRow(d)); });
+      doneWrap.innerHTML = "";
+      if (!done.length) doneWrap.innerHTML = '<div class="board-empty">완료된 항목이 여기 쌓여요.</div>';
+      done.forEach(function (d) { doneWrap.appendChild(itemRow(d)); });
+    }, function () {
+      openWrap.innerHTML = '<div class="board-empty">보드를 불러오지 못했어요.</div>';
+    });
+
+    function addItem() {
+      var text = addInput.value.trim();
+      if (!text) return;
+      addInput.value = "";
+      col.add({ text: text, done: false, owner: myName, ts: Date.now() });
+    }
+    addBtn.addEventListener("click", addItem);
+    addInput.addEventListener("keydown", function (e) { if (e.key === "Enter") addItem(); });
+  }
+
+  // ---------- calendar ----------
+  var CAL_BAR_COLORS = ["#3a6ea5", "#a5623a", "#7a4fa5", "#2e6f52", "#a53a6e", "#4f9ea5"];
+  function initCalendar(db) {
+    var DOW = ["일", "월", "화", "수", "목", "금", "토"];
+    var titleEl = document.getElementById("cal-title");
+    var gridWrapEl = document.getElementById("cal-grid-wrap");
+    var gridEl = document.getElementById("cal-grid");
+    var barsEl = document.getElementById("cal-bars");
+    var dayLabelEl = document.getElementById("cal-day-label");
+    var listEl = document.getElementById("cal-event-list");
+    var input = document.getElementById("cal-event-input");
+    var endInput = document.getElementById("cal-event-end");
+    var addBtn = document.getElementById("cal-event-add-btn");
+    var cancelBtn = document.getElementById("cal-event-cancel-btn");
+    var editTag = document.getElementById("cal-edit-tag");
+    var swatches = Array.prototype.slice.call(document.querySelectorAll(".cal-swatch"));
+    var col = db.collection("events");
+
+    function pad(n) { return n < 10 ? "0" + n : "" + n; }
+    function toKey(y, m, d) { return y + "-" + pad(m + 1) + "-" + pad(d); }
+    function parseKey(key) {
+      var p = key.split("-").map(Number);
+      return new Date(p[0], p[1] - 1, p[2]);
+    }
+    function fallbackColor(id) {
+      var h = 0;
+      for (var i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+      return CAL_BAR_COLORS[h % CAL_BAR_COLORS.length];
+    }
+    function eventColor(ev) { return ev.data.color || fallbackColor(ev.id); }
+
+    var now = new Date();
+    var view = { y: now.getFullYear(), m: now.getMonth() };
+    var todayKey = toKey(now.getFullYear(), now.getMonth(), now.getDate());
+    var selectedKey = todayKey;
+    var selectedColor = "";
+    var editingId = null;
+    var eventsByDate = {};   // every date an event touches -> list, for the day panel
+    var rangeEvents = [];    // multi-day events, for the bar overlay
+    var cellsFlat = [];      // {key, el} in render order, for the bar overlay
+
+    function setSelectedColor(c) {
+      selectedColor = c || "";
+      swatches.forEach(function (s) { s.classList.toggle("selected", (s.dataset.color || "") === selectedColor); });
+    }
+    swatches.forEach(function (s) {
+      s.addEventListener("click", function () { setSelectedColor(s.dataset.color); });
+    });
+
+    function resetForm() {
+      editingId = null;
+      input.value = "";
+      endInput.value = "";
+      setSelectedColor("");
+      addBtn.textContent = "추가";
+      editTag.hidden = true;
+      cancelBtn.hidden = true;
+    }
+    cancelBtn.addEventListener("click", resetForm);
+
+    function dayLabel(key) {
+      var p = key.split("-");
+      return p[0] + "년 " + parseInt(p[1], 10) + "월 " + parseInt(p[2], 10) + "일";
+    }
+
+    function renderGrid() {
+      titleEl.textContent = view.y + "." + pad(view.m + 1);
+      gridEl.innerHTML = "";
+      cellsFlat = [];
+      DOW.forEach(function (d) {
+        var h = document.createElement("div");
+        h.className = "cal-dow";
+        h.textContent = d;
+        gridEl.appendChild(h);
+      });
+      var first = new Date(view.y, view.m, 1);
+      var startOffset = first.getDay();
+      var daysInMonth = new Date(view.y, view.m + 1, 0).getDate();
+      var totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+      var prevMonthDays = new Date(view.y, view.m, 0).getDate();
+
+      for (var i = 0; i < totalCells; i++) {
+        var cell = document.createElement("div");
+        var dayNum, key, otherMonth = false;
+        if (i < startOffset) {
+          dayNum = prevMonthDays - startOffset + 1 + i;
+          var pm = view.m === 0 ? 11 : view.m - 1, py = view.m === 0 ? view.y - 1 : view.y;
+          key = toKey(py, pm, dayNum);
+          otherMonth = true;
+        } else if (i >= startOffset + daysInMonth) {
+          dayNum = i - startOffset - daysInMonth + 1;
+          var nm = view.m === 11 ? 0 : view.m + 1, ny = view.m === 11 ? view.y + 1 : view.y;
+          key = toKey(ny, nm, dayNum);
+          otherMonth = true;
+        } else {
+          dayNum = i - startOffset + 1;
+          key = toKey(view.y, view.m, dayNum);
+        }
+        cell.className = "cal-cell" + (otherMonth ? " other-month" : "") + (key === todayKey ? " today" : "") + (key === selectedKey ? " selected" : "");
+        cell.dataset.key = key;
+        var evts = (eventsByDate[key] || []).filter(function (ev) { return !ev.data.endDate || ev.data.endDate === ev.data.date; });
+        var dotsHtml = "";
+        if (evts.length) {
+          var shown = evts.slice(0, 4);
+          dotsHtml = '<div class="cal-dots">' + shown.map(function (ev) { return '<span class="cal-dot" style="background:' + eventColor(ev) + '"></span>'; }).join("") + '</div>';
+          if (evts.length > 4) dotsHtml += '<div class="cal-more">+' + (evts.length - 4) + '</div>';
+        }
+        cell.innerHTML = '<span class="cal-daynum">' + dayNum + '</span><div class="cal-bar-spacer"></div>' + dotsHtml;
+        cell.addEventListener("click", function () {
+          selectedKey = this.dataset.key;
+          renderGrid();
+          renderDayPanel();
+        });
+        gridEl.appendChild(cell);
+        cellsFlat.push({ key: key, el: cell });
+      }
+      renderBars();
+    }
+
+    function renderBars() {
+      barsEl.innerHTML = "";
+      if (!cellsFlat.length) return;
+      var keyIndex = {};
+      cellsFlat.forEach(function (c, i) { keyIndex[c.key] = i; });
+      var laneByRow = {}; // row -> array of lanes, each lane = array of occupied [startCol,endCol]
+
+      rangeEvents.forEach(function (ev) {
+        var startKey = ev.data.date, endKey = ev.data.endDate;
+        var startIdx = keyIndex[startKey], endIdx = keyIndex[endKey];
+        if (startIdx == null && endIdx == null) return; // entirely outside the visible grid
+        if (startIdx == null) startIdx = 0;
+        if (endIdx == null) endIdx = cellsFlat.length - 1;
+        if (startIdx > endIdx) return;
+
+        var segments = [];
+        var rows = [];
+        var i = startIdx;
+        while (i <= endIdx) {
+          var row = Math.floor(i / 7);
+          var rowEnd = Math.min(endIdx, row * 7 + 6);
+          segments.push({ row: row, from: i, to: rowEnd });
+          rows.push(row);
+          i = rowEnd + 1;
+        }
+
+        var lane = 0;
+        outer:
+        for (; ; lane++) {
+          for (var r = 0; r < rows.length; r++) {
+            var lanes = laneByRow[rows[r]] || [];
+            var occ = lanes[lane];
+            if (!occ) continue;
+            var seg = segments[r];
+            for (var o = 0; o < occ.length; o++) {
+              if (seg.from <= occ[o][1] && seg.to >= occ[o][0]) continue outer;
+            }
+          }
+          break;
+        }
+        segments.forEach(function (seg) {
+          laneByRow[seg.row] = laneByRow[seg.row] || [];
+          laneByRow[seg.row][lane] = laneByRow[seg.row][lane] || [];
+          laneByRow[seg.row][lane].push([seg.from, seg.to]);
+        });
+
+        var color = eventColor(ev);
+        segments.forEach(function (seg, si) {
+          var startCell = cellsFlat[seg.from].el, endCell = cellsFlat[seg.to].el;
+          var bar = document.createElement("div");
+          bar.className = "cal-bar";
+          bar.style.left = startCell.offsetLeft + "px";
+          bar.style.top = (startCell.offsetTop + 22 + lane * 14) + "px";
+          bar.style.width = (endCell.offsetLeft + endCell.offsetWidth - startCell.offsetLeft - 3) + "px";
+          bar.style.background = color;
+          bar.title = ev.data.text + " (" + dayLabel(startKey) + " ~ " + dayLabel(endKey) + ")";
+          if (si === 0) bar.textContent = ev.data.text;
+          gridWrapEl.style.position = "relative";
+          barsEl.appendChild(bar);
+        });
+      });
+    }
+
+    function renderDayPanel() {
+      dayLabelEl.textContent = dayLabel(selectedKey);
+      var evts = (eventsByDate[selectedKey] || []).slice().sort(function (a, b) { return a.data.ts - b.data.ts; });
+      listEl.innerHTML = "";
+      if (!evts.length) {
+        listEl.innerHTML = '<div class="board-empty">이 날짜엔 일정이 없어요.</div>';
+        return;
+      }
+      evts.forEach(function (ev) {
+        var isRange = ev.data.endDate && ev.data.endDate !== ev.data.date;
+        var row = document.createElement("div");
+        row.className = "cal-event-row";
+        row.innerHTML =
+          '<span class="cal-event-dot" style="background:' + eventColor(ev) + '"></span>' +
+          '<div style="flex:1;min-width:0"><div class="cal-event-text">' + esc(ev.data.text) + '</div>' +
+          (isRange ? '<div class="cal-event-range">' + dayLabel(ev.data.date) + ' ~ ' + dayLabel(ev.data.endDate) + '</div>' : '') +
+          '<div class="cal-event-meta">' + esc(ev.data.owner || "") + '</div></div>' +
+          '<button class="cal-event-edit" title="수정">✎</button>' +
+          '<button class="board-del" title="삭제">×</button>';
+        row.querySelector(".board-del").addEventListener("click", function () {
+          db.doc("events/" + ev.id).delete();
+        });
+        row.querySelector(".cal-event-edit").addEventListener("click", function () {
+          editingId = ev.id;
+          selectedKey = ev.data.date;
+          view.y = parseKey(ev.data.date).getFullYear();
+          view.m = parseKey(ev.data.date).getMonth();
+          input.value = ev.data.text;
+          endInput.value = ev.data.endDate || "";
+          setSelectedColor(ev.data.color || "");
+          addBtn.textContent = "수정 저장";
+          editTag.hidden = false;
+          cancelBtn.hidden = false;
+          renderGrid();
+          renderDayPanel();
+          input.focus();
+        });
+        listEl.appendChild(row);
+      });
+    }
+
+    col.orderBy("ts", "asc").limit(500).onSnapshot(function (snap) {
+      eventsByDate = {};
+      rangeEvents = [];
+      snap.docs.forEach(function (d) {
+        var data = d.data();
+        if (!data || !data.date) return;
+        var isRange = data.endDate && data.endDate !== data.date;
+        if (isRange) {
+          rangeEvents.push({ id: d.id, data: data });
+          var cur = parseKey(data.date), end = parseKey(data.endDate), guard = 0;
+          while (cur <= end && guard < 370) {
+            var k = toKey(cur.getFullYear(), cur.getMonth(), cur.getDate());
+            (eventsByDate[k] = eventsByDate[k] || []).push({ id: d.id, data: data });
+            cur.setDate(cur.getDate() + 1);
+            guard++;
+          }
+        } else {
+          (eventsByDate[data.date] = eventsByDate[data.date] || []).push({ id: d.id, data: data });
+        }
+      });
+      renderGrid();
+      renderDayPanel();
+    }, function () {
+      gridEl.innerHTML = '<div class="board-empty">달력을 불러오지 못했어요.</div>';
+    });
+
+    document.getElementById("cal-prev").addEventListener("click", function () {
+      view.m--; if (view.m < 0) { view.m = 11; view.y--; }
+      renderGrid();
+    });
+    document.getElementById("cal-next").addEventListener("click", function () {
+      view.m++; if (view.m > 11) { view.m = 0; view.y++; }
+      renderGrid();
+    });
+    document.getElementById("cal-today").addEventListener("click", function () {
+      view.y = now.getFullYear(); view.m = now.getMonth();
+      selectedKey = todayKey;
+      renderGrid();
+      renderDayPanel();
+    });
+    window.addEventListener("resize", renderBars);
+
+    function addEvent() {
+      var text = input.value.trim();
+      if (!text) return;
+      var endVal = endInput.value;
+      var data = { date: selectedKey, text: text, color: selectedColor || null, ts: Date.now() };
+      data.endDate = (endVal && endVal > selectedKey) ? endVal : null;
+      if (editingId) {
+        db.doc("events/" + editingId).update(data);
+      } else {
+        data.owner = myName;
+        col.add(data);
+      }
+      resetForm();
+    }
+    addBtn.addEventListener("click", addEvent);
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") addEvent(); });
+  }
+
+  if (myName) boot();
+})();
+</script>
