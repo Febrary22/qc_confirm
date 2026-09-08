@@ -30,6 +30,7 @@ CATEGORY_ICON = {
 }
 
 CONTACT_EMAIL = "kimyj3718@gmail.com"
+RELAY_URL = "https://claude.ai/code/artifact/411b3c7f-2246-4b28-89d1-4b350eb428cc"
 
 
 @dataclass(frozen=True)
@@ -190,6 +191,11 @@ def main() -> None:
         use_container_width=True,
         on_click=_reset_navigation,
         args=("home",),
+    )
+    st.sidebar.link_button(
+        "📡 Relay (팀 채팅·보드·달력)",
+        RELAY_URL,
+        use_container_width=True,
     )
     st.sidebar.button(
         "📋 게시판 (자유·문의·아이디어)",
