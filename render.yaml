@@ -21,3 +21,16 @@ services:
     plan: free
     dockerfilePath: ./streamlit_app/Dockerfile
     dockerContext: .
+    envVars:
+      # 게시판(자유·문의·아이디어) 글·사진을 영구 저장하는 데 씁니다.
+      # 아래 databases: 에 정의한 office-tools-db와 자동으로 연결돼요.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: office-tools-db
+          property: connectionString
+
+databases:
+  # 게시판용 Postgres 데이터베이스 (유료 플랜, 카드 등록 필요).
+  # Blueprint를 처음 적용(Apply)할 때 함께 만들어지고, 위 서비스에 DATABASE_URL로 자동 연결돼요.
+  - name: office-tools-db
+    plan: basic-256mb
