@@ -1,9 +1,12 @@
 """NetCDF(.nc) 파일을 열어서 구조와 데이터를 확인하는 도구."""
 from __future__ import annotations
 
+import io
 import os
 import tempfile
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import streamlit as st
 import xarray as xr
@@ -67,6 +70,50 @@ def _describe_dataset(ds: xr.Dataset) -> None:
         st.caption("전역 속성은 없어요.")
 
 
+def _tick_positions(n: int, max_ticks: int = 8) -> list[int]:
+    if n <= 0:
+        return []
+    step = max(1, n // max_ticks)
+    return list(range(0, n, step))
+
+
+def _format_tick(value) -> str:
+    if isinstance(value, (int, np.integer)):
+        return str(value)
+    if isinstance(value, (float, np.floating)):
+        return f"{value:.2f}"
+    return str(value)[:10]  # 날짜/문자열은 너무 길면 잘라서 표시
+
+
+def _build_heatmap(sliced: xr.DataArray, var_name: str, units: str, title: str) -> "plt.Figure":
+    """2차원 데이터를 그림(히트맵)으로 그립니다."""
+    dim0, dim1 = sliced.dims  # 세로축, 가로축
+    coord0 = sliced.coords[dim0].values if dim0 in sliced.coords else np.arange(sliced.sizes[dim0])
+    coord1 = sliced.coords[dim1].values if dim1 in sliced.coords else np.arange(sliced.sizes[dim1])
+
+    values = np.ma.masked_invalid(sliced.values.astype("float64"))
+    cmap = plt.get_cmap("viridis").copy()
+    cmap.set_bad("lightgray")  # 결측치는 회색으로 표시
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    im = ax.imshow(values, aspect="auto", origin="lower", cmap=cmap)
+    cbar = fig.colorbar(im, ax=ax)
+    cbar.set_label(units or var_name)
+
+    y_ticks = _tick_positions(len(coord0))
+    x_ticks = _tick_positions(len(coord1))
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels([_format_tick(coord0[i]) for i in y_ticks])
+    ax.set_xticks(x_ticks)
+    ax.set_xticklabels([_format_tick(coord1[i]) for i in x_ticks], rotation=45, ha="right")
+
+    ax.set_ylabel(dim0)
+    ax.set_xlabel(dim1)
+    ax.set_title(title)
+    fig.tight_layout()
+    return fig
+
+
 def render() -> None:
     tool_header(TOOL_META["name"], TOOL_META["description"])
 
@@ -121,6 +168,9 @@ def render() -> None:
     if st.button("미리보기 만들기", type="primary"):
         with friendly_errors("데이터 미리보기 만들기"):
             sliced = da.isel(**indexers) if indexers else da
+            units = da.attrs.get("units", "")
+            title = f"{da.attrs.get('long_name', var_name)} ({var_name})"
+            image_bytes: bytes | None = None
 
             if sliced.ndim == 0:
                 st.metric(var_name, float(sliced.values))
@@ -131,18 +181,27 @@ def render() -> None:
                 st.caption("표는 앞부분 200줄만 보여드려요. 전체 내용은 아래에서 CSV로 받을 수 있어요.")
                 st.dataframe(preview_df.head(200), use_container_width=True)
             elif sliced.ndim == 2:
-                st.caption("2차원 데이터라서 표로 보여드려요. (값이 클수록 진한 색이에요)")
+                st.caption("2차원 데이터를 그림(히트맵)으로 보여드려요. 색이 진할수록 값이 커요.")
+                fig = _build_heatmap(sliced, var_name, units, title)
+                st.pyplot(fig, use_container_width=True)
+
+                img_buffer = io.BytesIO()
+                fig.savefig(img_buffer, format="png", dpi=150)
+                image_bytes = img_buffer.getvalue()
+                plt.close(fig)
+
                 df2d = sliced.to_pandas()
-                try:
-                    st.dataframe(df2d.style.background_gradient(cmap="Blues"), use_container_width=True)
-                except Exception:
-                    st.dataframe(df2d, use_container_width=True)
+                with st.expander("표로도 보기"):
+                    try:
+                        st.dataframe(df2d.style.background_gradient(cmap="Blues"), use_container_width=True)
+                    except Exception:
+                        st.dataframe(df2d, use_container_width=True)
                 preview_df = df2d.reset_index()
             else:
                 st.warning("아직 3차원 이상은 그대로 보여드리지 못해요. 위에서 차원 값을 더 골라 주세요.")
                 return
 
-            step_caption(4, "필요하면 표를 CSV로 내려받으세요")
+            step_caption(4, "필요하면 결과를 내려받으세요")
             csv_bytes = preview_df.to_csv(index=False).encode("utf-8-sig")
             download_result(
                 f"'{var_name}' 미리보기 CSV로 내려받기",
@@ -150,3 +209,11 @@ def render() -> None:
                 f"{var_name}_미리보기.csv",
                 "text/csv",
             )
+            if image_bytes is not None:
+                st.download_button(
+                    f"'{var_name}' 그림(PNG) 내려받기",
+                    data=image_bytes,
+                    file_name=f"{var_name}_그림.png",
+                    mime="image/png",
+                    use_container_width=True,
+                )
