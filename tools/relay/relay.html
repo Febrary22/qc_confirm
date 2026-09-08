@@ -495,6 +495,19 @@
     border-radius: 9px; padding: 0 16px; font: inherit; font-size: 13px; cursor: pointer;
   }
   #forum-compose-cancel:hover { background: var(--surface-2); }
+  #forum-attach-btn {
+    align-self: flex-start; border: 1px solid var(--line); background: var(--bg); color: var(--muted);
+    border-radius: 8px; padding: 6px 12px; font: inherit; font-size: 12.5px; cursor: pointer;
+  }
+  #forum-attach-btn:hover { background: var(--surface-2); color: var(--ink); }
+  #forum-image-preview { position: relative; display: inline-block; align-self: flex-start; }
+  #forum-image-preview img { max-width: 220px; max-height: 160px; border-radius: 8px; display: block; border: 1px solid var(--line); }
+  #forum-image-remove {
+    position: absolute; top: -7px; right: -7px; width: 20px; height: 20px; border-radius: 50%;
+    border: none; background: var(--danger); color: #fff; cursor: pointer; font-size: 12px; line-height: 1;
+  }
+  #forum-image-status { font-size: 11px; color: var(--faint); }
+  #forum-image-status.error { color: var(--danger); }
   .forum-post-card {
     border-bottom: 1px solid var(--line); padding: 13px 4px; cursor: pointer;
   }
@@ -504,6 +517,8 @@
     font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 6px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
+  .forum-post-thumb { max-width: 100%; max-height: 160px; border-radius: 8px; margin-bottom: 6px; display: block; }
+  .forum-post-image { max-width: 100%; border-radius: 10px; margin: 10px 0; display: block; }
   .forum-post-meta { font-size: 10.5px; color: var(--faint); }
   #forum-back-btn {
     border: none; background: none; color: var(--muted); cursor: pointer;
@@ -694,6 +709,13 @@
           <div id="forum-compose" hidden>
             <input id="forum-title-input" type="text" placeholder="제목" maxlength="80" />
             <textarea id="forum-body-input" rows="4" placeholder="문의, 잡담, 공지 등 자유롭게 적어주세요..."></textarea>
+            <input id="forum-image-input" type="file" accept="image/*" hidden />
+            <button type="button" id="forum-attach-btn">📷 사진 첨부</button>
+            <div id="forum-image-status"></div>
+            <div id="forum-image-preview" hidden>
+              <img id="forum-image-preview-img" alt="첨부 사진 미리보기" />
+              <button id="forum-image-remove" title="사진 제거">×</button>
+            </div>
             <div style="display:flex;gap:8px">
               <button class="board-add-btn" id="forum-submit-btn">올리기</button>
               <button id="forum-compose-cancel">취소</button>
@@ -1619,6 +1641,13 @@
     var bodyInput = document.getElementById("forum-body-input");
     var submitBtn = document.getElementById("forum-submit-btn");
     var cancelBtn = document.getElementById("forum-compose-cancel");
+    var attachBtn = document.getElementById("forum-attach-btn");
+    var imageInput = document.getElementById("forum-image-input");
+    var imageStatus = document.getElementById("forum-image-status");
+    var imagePreview = document.getElementById("forum-image-preview");
+    var imagePreviewImg = document.getElementById("forum-image-preview-img");
+    var imageRemoveBtn = document.getElementById("forum-image-remove");
+    var pendingImage = null;
     var postsEl = document.getElementById("forum-posts");
     var listView = document.getElementById("forum-list-view");
     var detailView = document.getElementById("forum-detail-view");
@@ -1636,6 +1665,68 @@
       return s.length > 90 ? s.slice(0, 90) + "…" : s;
     }
 
+    // downscale + compress an image client-side to fit the ~256KB document limit
+    // (no file-storage capability on this account, so it travels inside the post doc)
+    function compressImage(file, done) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var img = new Image();
+        img.onload = function () {
+          var widths = [700, 520, 380, 260];
+          var qualities = [0.75, 0.6, 0.45, 0.3];
+          var canvas = document.createElement("canvas");
+          var ctx = canvas.getContext("2d");
+          var result = null;
+          widthLoop:
+          for (var wi = 0; wi < widths.length; wi++) {
+            var w = Math.min(widths[wi], img.width);
+            var h = Math.round(img.height * (w / img.width));
+            canvas.width = w; canvas.height = h;
+            ctx.drawImage(img, 0, 0, w, h);
+            for (var qi = 0; qi < qualities.length; qi++) {
+              var url = canvas.toDataURL("image/jpeg", qualities[qi]);
+              if (url.length < 180000) { result = url; break widthLoop; }
+            }
+          }
+          done(result);
+        };
+        img.onerror = function () { done(null); };
+        img.src = e.target.result;
+      };
+      reader.onerror = function () { done(null); };
+      reader.readAsDataURL(file);
+    }
+
+    function resetImage() {
+      pendingImage = null;
+      imageInput.value = "";
+      imagePreview.hidden = true;
+      imageStatus.textContent = "";
+      imageStatus.className = "";
+    }
+
+    attachBtn.addEventListener("click", function () { imageInput.click(); });
+    imageInput.addEventListener("change", function () {
+      var file = imageInput.files && imageInput.files[0];
+      if (!file) return;
+      imageStatus.className = "";
+      imageStatus.textContent = "사진 압축 중...";
+      compressImage(file, function (url) {
+        if (!url) {
+          imageStatus.className = "error";
+          imageStatus.textContent = "이 사진은 용량을 줄여도 너무 커요. 다른 사진으로 시도해주세요.";
+          pendingImage = null;
+          imagePreview.hidden = true;
+          return;
+        }
+        pendingImage = url;
+        imagePreviewImg.src = url;
+        imagePreview.hidden = false;
+        imageStatus.textContent = "화질을 낮춰 첨부돼요 (약 " + Math.round(url.length / 1350) + "KB)";
+      });
+    });
+    imageRemoveBtn.addEventListener("click", resetImage);
+
     col.orderBy("ts", "desc").limit(100).onSnapshot(function (snap) {
       postsEl.innerHTML = "";
       if (!snap.docs.length) {
@@ -1649,6 +1740,7 @@
         card.className = "forum-post-card";
         card.innerHTML =
           '<div class="forum-post-title">' + esc(p.title) + '</div>' +
+          (p.image ? '<img class="forum-post-thumb" src="' + p.image + '" alt="" />' : '') +
           (p.body ? '<div class="forum-post-preview">' + esc(preview(p.body)) + '</div>' : '') +
           '<div class="forum-post-meta">' + esc(p.author || "익명") + ' · ' + relTime(p.ts || 0) + '</div>';
         card.addEventListener("click", function () { openPost(doc.id, p); });
@@ -1665,6 +1757,7 @@
       detailPostEl.innerHTML =
         '<div class="forum-post-title">' + esc(p.title) + '</div>' +
         '<div class="forum-post-meta">' + esc(p.author || "익명") + ' · ' + relTime(p.ts || 0) + '</div>' +
+        (p.image ? '<img class="forum-post-image" src="' + p.image + '" alt="" />' : '') +
         (p.body ? '<div class="forum-post-body">' + esc(p.body) + '</div>' : '');
       if (commentsUnsub) commentsUnsub();
       commentsUnsub = db.doc("posts/" + id).collection("comments").orderBy("ts", "asc").limit(300).onSnapshot(function (snap) {
@@ -1704,14 +1797,16 @@
       compose.hidden = true;
       titleInput.value = "";
       bodyInput.value = "";
+      resetImage();
     });
     submitBtn.addEventListener("click", function () {
       var title = titleInput.value.trim();
       var body = bodyInput.value.trim();
       if (!title) return;
-      col.add({ title: title, body: body, author: myName, ts: Date.now() });
+      col.add({ title: title, body: body, image: pendingImage || null, author: myName, ts: Date.now() });
       titleInput.value = "";
       bodyInput.value = "";
+      resetImage();
       compose.hidden = true;
     });
 
