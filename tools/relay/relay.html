@@ -495,19 +495,33 @@
     border-radius: 9px; padding: 0 16px; font: inherit; font-size: 13px; cursor: pointer;
   }
   #forum-compose-cancel:hover { background: var(--surface-2); }
-  #forum-attach-btn {
+  .forum-attach-btn {
     align-self: flex-start; border: 1px solid var(--line); background: var(--bg); color: var(--muted);
     border-radius: 8px; padding: 6px 12px; font: inherit; font-size: 12.5px; cursor: pointer;
   }
-  #forum-attach-btn:hover { background: var(--surface-2); color: var(--ink); }
-  #forum-image-preview { position: relative; display: inline-block; align-self: flex-start; }
-  #forum-image-preview img { max-width: 220px; max-height: 160px; border-radius: 8px; display: block; border: 1px solid var(--line); }
-  #forum-image-remove {
+  .forum-attach-btn:hover { background: var(--surface-2); color: var(--ink); }
+  .forum-image-preview { position: relative; display: inline-block; align-self: flex-start; }
+  .forum-image-preview img { max-width: 220px; max-height: 160px; border-radius: 8px; display: block; border: 1px solid var(--line); }
+  .forum-image-remove {
     position: absolute; top: -7px; right: -7px; width: 20px; height: 20px; border-radius: 50%;
     border: none; background: var(--danger); color: #fff; cursor: pointer; font-size: 12px; line-height: 1;
   }
-  #forum-image-status { font-size: 11px; color: var(--faint); }
-  #forum-image-status.error { color: var(--danger); }
+  .forum-image-status { font-size: 11px; color: var(--faint); }
+  .forum-image-status.error { color: var(--danger); }
+  .forum-field {
+    border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+    border-radius: 8px; padding: 9px 11px; font: inherit; font-size: 13.5px; resize: vertical;
+  }
+  .forum-field:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .forum-edit-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+  .forum-cancel-btn {
+    border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+    border-radius: 9px; padding: 0 16px; font: inherit; font-size: 13px; cursor: pointer;
+  }
+  .forum-cancel-btn:hover { background: var(--surface-2); }
+  .forum-detail-actions { display: flex; gap: 4px; margin-top: 10px; }
+  .forum-comment-actions { margin-left: auto; display: flex; gap: 2px; flex-shrink: 0; }
+  .forum-comment-image { max-width: 180px; max-height: 140px; border-radius: 8px; margin-top: 6px; display: block; }
   .forum-post-card {
     border-bottom: 1px solid var(--line); padding: 13px 4px; cursor: pointer;
   }
@@ -707,18 +721,18 @@
         <div id="forum-list-view">
           <button class="board-add-btn" id="forum-new-btn">✎ 새 글쓰기</button>
           <div id="forum-compose" hidden>
-            <input id="forum-title-input" type="text" placeholder="제목" maxlength="80" />
-            <textarea id="forum-body-input" rows="4" placeholder="문의, 잡담, 공지 등 자유롭게 적어주세요..."></textarea>
+            <input id="forum-title-input" class="forum-field" type="text" placeholder="제목" maxlength="80" />
+            <textarea id="forum-body-input" class="forum-field" rows="4" placeholder="문의, 잡담, 공지 등 자유롭게 적어주세요..."></textarea>
             <input id="forum-image-input" type="file" accept="image/*" hidden />
-            <button type="button" id="forum-attach-btn">📷 사진 첨부</button>
-            <div id="forum-image-status"></div>
-            <div id="forum-image-preview" hidden>
+            <button type="button" id="forum-attach-btn" class="forum-attach-btn">📷 사진 첨부</button>
+            <div id="forum-image-status" class="forum-image-status"></div>
+            <div id="forum-image-preview" class="forum-image-preview" hidden>
               <img id="forum-image-preview-img" alt="첨부 사진 미리보기" />
-              <button id="forum-image-remove" title="사진 제거">×</button>
+              <button id="forum-image-remove" class="forum-image-remove" title="사진 제거">×</button>
             </div>
             <div style="display:flex;gap:8px">
               <button class="board-add-btn" id="forum-submit-btn">올리기</button>
-              <button id="forum-compose-cancel">취소</button>
+              <button id="forum-compose-cancel" class="forum-cancel-btn">취소</button>
             </div>
           </div>
           <div id="forum-posts"></div>
@@ -727,8 +741,15 @@
           <button id="forum-back-btn">← 목록으로</button>
           <div id="forum-detail-post"></div>
           <div id="forum-comments"></div>
+          <input id="forum-comment-image-input" type="file" accept="image/*" hidden />
+          <div id="forum-comment-image-preview" class="forum-image-preview" hidden>
+            <img id="forum-comment-image-preview-img" alt="첨부 사진 미리보기" />
+            <button id="forum-comment-image-remove" class="forum-image-remove" title="사진 제거">×</button>
+          </div>
+          <div id="forum-comment-image-status" class="forum-image-status"></div>
           <div id="forum-comment-add">
             <input id="forum-comment-input" type="text" placeholder="댓글 달기..." maxlength="400" />
+            <button type="button" id="forum-comment-attach-btn" class="forum-attach-btn" title="사진 첨부">📷</button>
             <button class="board-add-btn" id="forum-comment-btn">등록</button>
           </div>
         </div>
@@ -1656,9 +1677,17 @@
     var commentsEl = document.getElementById("forum-comments");
     var commentInput = document.getElementById("forum-comment-input");
     var commentBtn = document.getElementById("forum-comment-btn");
+    var commentAttachBtn = document.getElementById("forum-comment-attach-btn");
+    var commentImageInput = document.getElementById("forum-comment-image-input");
+    var commentImageStatus = document.getElementById("forum-comment-image-status");
+    var commentImagePreview = document.getElementById("forum-comment-image-preview");
+    var commentImagePreviewImg = document.getElementById("forum-comment-image-preview-img");
+    var commentImageRemoveBtn = document.getElementById("forum-comment-image-remove");
+    var pendingCommentImage = null;
     var col = db.collection("posts");
     var commentsUnsub = null;
     var currentPostId = null;
+    var currentPostData = null;
 
     function preview(body) {
       var s = (body || "").replace(/\s+/g, " ").trim();
@@ -1666,7 +1695,7 @@
     }
 
     // downscale + compress an image client-side to fit the ~256KB document limit
-    // (no file-storage capability on this account, so it travels inside the post doc)
+    // (no file-storage capability on this account, so it travels inside the doc)
     function compressImage(file, done) {
       var reader = new FileReader();
       reader.onload = function (e) {
@@ -1696,36 +1725,62 @@
       reader.onerror = function () { done(null); };
       reader.readAsDataURL(file);
     }
+    // wires an attach button + file input + preview block to one pendingImage setter
+    function wireAttach(opts) {
+      opts.btn.addEventListener("click", function () { opts.input.click(); });
+      opts.input.addEventListener("change", function () {
+        var file = opts.input.files && opts.input.files[0];
+        if (!file) return;
+        opts.status.className = "forum-image-status";
+        opts.status.textContent = "사진 압축 중...";
+        compressImage(file, function (url) {
+          if (!url) {
+            opts.status.className = "forum-image-status error";
+            opts.status.textContent = "이 사진은 용량을 줄여도 너무 커요. 다른 사진으로 시도해주세요.";
+            opts.set(null);
+            opts.preview.hidden = true;
+            return;
+          }
+          opts.set(url);
+          opts.previewImg.src = url;
+          opts.preview.hidden = false;
+          opts.status.textContent = "화질을 낮춰 첨부돼요 (약 " + Math.round(url.length / 1350) + "KB)";
+        });
+      });
+      opts.removeBtn.addEventListener("click", function () {
+        opts.set(null);
+        opts.input.value = "";
+        opts.preview.hidden = true;
+        opts.status.textContent = "";
+        opts.status.className = "forum-image-status";
+      });
+    }
 
     function resetImage() {
       pendingImage = null;
       imageInput.value = "";
       imagePreview.hidden = true;
       imageStatus.textContent = "";
-      imageStatus.className = "";
+      imageStatus.className = "forum-image-status";
     }
-
-    attachBtn.addEventListener("click", function () { imageInput.click(); });
-    imageInput.addEventListener("change", function () {
-      var file = imageInput.files && imageInput.files[0];
-      if (!file) return;
-      imageStatus.className = "";
-      imageStatus.textContent = "사진 압축 중...";
-      compressImage(file, function (url) {
-        if (!url) {
-          imageStatus.className = "error";
-          imageStatus.textContent = "이 사진은 용량을 줄여도 너무 커요. 다른 사진으로 시도해주세요.";
-          pendingImage = null;
-          imagePreview.hidden = true;
-          return;
-        }
-        pendingImage = url;
-        imagePreviewImg.src = url;
-        imagePreview.hidden = false;
-        imageStatus.textContent = "화질을 낮춰 첨부돼요 (약 " + Math.round(url.length / 1350) + "KB)";
-      });
+    wireAttach({
+      btn: attachBtn, input: imageInput, status: imageStatus, preview: imagePreview,
+      previewImg: imagePreviewImg, removeBtn: imageRemoveBtn,
+      set: function (v) { pendingImage = v; },
     });
-    imageRemoveBtn.addEventListener("click", resetImage);
+
+    function resetCommentImage() {
+      pendingCommentImage = null;
+      commentImageInput.value = "";
+      commentImagePreview.hidden = true;
+      commentImageStatus.textContent = "";
+      commentImageStatus.className = "forum-image-status";
+    }
+    wireAttach({
+      btn: commentAttachBtn, input: commentImageInput, status: commentImageStatus, preview: commentImagePreview,
+      previewImg: commentImagePreviewImg, removeBtn: commentImageRemoveBtn,
+      set: function (v) { pendingCommentImage = v; },
+    });
 
     col.orderBy("ts", "desc").limit(100).onSnapshot(function (snap) {
       postsEl.innerHTML = "";
@@ -1750,34 +1805,116 @@
       postsEl.innerHTML = '<div class="board-empty">게시판을 불러오지 못했어요.</div>';
     });
 
-    function openPost(id, p) {
-      currentPostId = id;
-      listView.hidden = true;
-      detailView.hidden = false;
+    function renderPostView(p) {
+      currentPostData = p;
       detailPostEl.innerHTML =
         '<div class="forum-post-title">' + esc(p.title) + '</div>' +
         '<div class="forum-post-meta">' + esc(p.author || "익명") + ' · ' + relTime(p.ts || 0) + '</div>' +
         (p.image ? '<img class="forum-post-image" src="' + p.image + '" alt="" />' : '') +
-        (p.body ? '<div class="forum-post-body">' + esc(p.body) + '</div>' : '');
-      if (commentsUnsub) commentsUnsub();
-      commentsUnsub = db.doc("posts/" + id).collection("comments").orderBy("ts", "asc").limit(300).onSnapshot(function (snap) {
-        commentsEl.innerHTML = "";
-        if (!snap.docs.length) {
-          commentsEl.innerHTML = '<div class="board-empty">아직 댓글이 없어요.</div>';
-          return;
-        }
-        snap.docs.forEach(function (doc) {
-          var c = doc.data();
-          if (!c) return;
-          var row = document.createElement("div");
-          row.className = "forum-comment";
-          row.innerHTML =
-            '<div class="msg-avatar" style="background:' + colorFor(c.author || "?") + '">' + esc(initials(c.author)) + '</div>' +
-            '<div class="msg-body"><div class="msg-head"><span class="msg-author">' + esc(c.author || "익명") + '</span><span class="msg-time mono">' + timeLabel(c.ts) + '</span></div>' +
-            '<div class="msg-text">' + esc(c.text) + '</div></div>';
-          commentsEl.appendChild(row);
+        (p.body ? '<div class="forum-post-body">' + esc(p.body) + '</div>' : '') +
+        '<div class="forum-detail-actions">' +
+          '<button class="cal-event-edit" id="forum-post-edit-btn" title="수정">✎ 수정</button>' +
+          '<button class="board-del" id="forum-post-del-btn" title="삭제">× 삭제</button>' +
+        '</div>';
+      document.getElementById("forum-post-edit-btn").addEventListener("click", function () { renderPostEdit(p); });
+      document.getElementById("forum-post-del-btn").addEventListener("click", function () {
+        if (!confirm("이 글을 삭제할까요? 댓글도 더 이상 보이지 않게 돼요.")) return;
+        db.doc("posts/" + currentPostId).delete();
+        backBtn.click();
+      });
+    }
+
+    function renderPostEdit(p) {
+      var editImage = p.image || null;
+      detailPostEl.innerHTML =
+        '<div class="forum-edit-form">' +
+          '<input class="forum-field" id="forum-edit-title" type="text" maxlength="80" />' +
+          '<textarea class="forum-field" id="forum-edit-body" rows="5"></textarea>' +
+          '<input type="file" accept="image/*" id="forum-edit-image-input" hidden />' +
+          '<button type="button" class="forum-attach-btn" id="forum-edit-attach-btn">📷 사진 변경</button>' +
+          '<div class="forum-image-status" id="forum-edit-image-status"></div>' +
+          '<div class="forum-image-preview" id="forum-edit-image-preview"' + (editImage ? '' : ' hidden') + '>' +
+            '<img id="forum-edit-image-preview-img" alt="" src="' + (editImage || "") + '" />' +
+            '<button class="forum-image-remove" id="forum-edit-image-remove" title="사진 제거">×</button>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px">' +
+            '<button class="board-add-btn" id="forum-edit-save-btn">저장</button>' +
+            '<button class="forum-cancel-btn" id="forum-edit-cancel-btn">취소</button>' +
+          '</div>' +
+        '</div>';
+      document.getElementById("forum-edit-title").value = p.title || "";
+      document.getElementById("forum-edit-body").value = p.body || "";
+      wireAttach({
+        btn: document.getElementById("forum-edit-attach-btn"),
+        input: document.getElementById("forum-edit-image-input"),
+        status: document.getElementById("forum-edit-image-status"),
+        preview: document.getElementById("forum-edit-image-preview"),
+        previewImg: document.getElementById("forum-edit-image-preview-img"),
+        removeBtn: document.getElementById("forum-edit-image-remove"),
+        set: function (v) { editImage = v; },
+      });
+      document.getElementById("forum-edit-cancel-btn").addEventListener("click", function () { renderPostView(p); });
+      document.getElementById("forum-edit-save-btn").addEventListener("click", function () {
+        var newTitle = document.getElementById("forum-edit-title").value.trim();
+        if (!newTitle) return;
+        var updated = { title: newTitle, body: document.getElementById("forum-edit-body").value.trim(), image: editImage || null };
+        db.doc("posts/" + currentPostId).update(updated);
+        renderPostView(Object.assign({}, p, updated));
+      });
+    }
+
+    function renderComments(snap) {
+      commentsEl.innerHTML = "";
+      if (!snap.docs.length) {
+        commentsEl.innerHTML = '<div class="board-empty">아직 댓글이 없어요.</div>';
+        return;
+      }
+      snap.docs.forEach(function (doc) {
+        var c = doc.data();
+        if (!c) return;
+        var row = document.createElement("div");
+        row.className = "forum-comment";
+        row.innerHTML =
+          '<div class="msg-avatar" style="background:' + colorFor(c.author || "?") + '">' + esc(initials(c.author)) + '</div>' +
+          '<div class="msg-body">' +
+            '<div class="msg-head"><span class="msg-author">' + esc(c.author || "익명") + '</span><span class="msg-time mono">' + timeLabel(c.ts) + '</span>' +
+              '<span class="forum-comment-actions"><button class="cal-event-edit" title="수정">✎</button><button class="board-del" title="삭제">×</button></span>' +
+            '</div>' +
+            '<div class="msg-text">' + esc(c.text) + '</div>' +
+            (c.image ? '<img class="forum-comment-image" src="' + c.image + '" alt="" />' : '') +
+          '</div>';
+        row.querySelector(".board-del").addEventListener("click", function () {
+          if (confirm("댓글을 삭제할까요?")) db.doc("posts/" + currentPostId).collection("comments").doc(doc.id).delete();
         });
-      }, function () {
+        row.querySelector(".cal-event-edit").addEventListener("click", function () {
+          var textEl = row.querySelector(".msg-text");
+          var original = c.text;
+          textEl.outerHTML = '<input class="board-edit-input msg-text" type="text" maxlength="400" value="">';
+          var editEl = row.querySelector(".msg-text");
+          editEl.value = original;
+          editEl.focus();
+          editEl.select();
+          function commit() {
+            var v = editEl.value.trim();
+            if (v && v !== original) db.doc("posts/" + currentPostId).collection("comments").doc(doc.id).update({ text: v });
+          }
+          editEl.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") { e.preventDefault(); commit(); editEl.blur(); }
+            if (e.key === "Escape") { editEl.value = original; editEl.blur(); }
+          });
+          editEl.addEventListener("blur", commit);
+        });
+        commentsEl.appendChild(row);
+      });
+    }
+
+    function openPost(id, p) {
+      currentPostId = id;
+      listView.hidden = true;
+      detailView.hidden = false;
+      renderPostView(p);
+      if (commentsUnsub) commentsUnsub();
+      commentsUnsub = db.doc("posts/" + id).collection("comments").orderBy("ts", "asc").limit(300).onSnapshot(renderComments, function () {
         commentsEl.innerHTML = '<div class="board-empty">댓글을 불러오지 못했어요.</div>';
       });
     }
@@ -1787,6 +1924,7 @@
       listView.hidden = false;
       if (commentsUnsub) { commentsUnsub(); commentsUnsub = null; }
       currentPostId = null;
+      currentPostData = null;
     });
 
     newBtn.addEventListener("click", function () {
@@ -1812,9 +1950,10 @@
 
     function addComment() {
       var text = commentInput.value.trim();
-      if (!text || !currentPostId) return;
+      if ((!text && !pendingCommentImage) || !currentPostId) return;
       commentInput.value = "";
-      db.doc("posts/" + currentPostId).collection("comments").add({ author: myName, text: text, ts: Date.now() });
+      db.doc("posts/" + currentPostId).collection("comments").add({ author: myName, text: text, image: pendingCommentImage || null, ts: Date.now() });
+      resetCommentImage();
     }
     commentBtn.addEventListener("click", addComment);
     commentInput.addEventListener("keydown", function (e) { if (e.key === "Enter") addComment(); });
