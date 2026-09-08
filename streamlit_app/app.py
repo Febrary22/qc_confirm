@@ -16,6 +16,7 @@ from typing import Callable
 
 import streamlit as st
 
+import board
 import tools as tools_package
 
 # 카테고리는 이 순서로 보여줍니다. (목록에 없는 새 카테고리가 생기면 맨 뒤에 자동으로 붙어요)
@@ -123,8 +124,9 @@ def render_home(all_tools: list[ToolInfo]) -> None:
 
     st.divider()
     st.info(
-        f"🙋 필요한 도구가 없거나 개선하고 싶은 점이 있으면, 왼쪽 사이드바의 "
-        f"**'문의 및 기능 추가 요청하기'** 버튼을 눌러주세요. ({CONTACT_EMAIL})"
+        "💬 자유롭게 이야기 나누거나 아이디어를 공유하고 싶으면 왼쪽 사이드바의 "
+        "**'📋 게시판'** 버튼을, 필요한 도구가 없거나 개선하고 싶은 점이 있으면 "
+        f"**'✉️ 문의 및 기능 추가 요청하기'** 버튼을 눌러주세요. ({CONTACT_EMAIL})"
     )
 
 
@@ -158,8 +160,8 @@ def render_contact() -> None:
     st.caption("왼쪽 사이드바에서 다른 도구를 선택하면 이 화면에서 바로 빠져나갈 수 있어요.")
 
 
-def _reset_navigation(show_contact: bool) -> None:
-    """검색어·카테고리 선택을 초기화합니다.
+def _reset_navigation(page: str) -> None:
+    """검색어·카테고리 선택을 초기화하고, 홈/문의/게시판 중 어떤 화면을 보여줄지 정합니다.
 
     st.button(on_click=...)의 콜백 안에서만 호출해야 해요. 콜백은 화면이 다시 그려지기
     '전'에 실행되기 때문에, 이미 만들어진 위젯의 session_state를 안전하게 바꿀 수 있어요.
@@ -167,7 +169,8 @@ def _reset_navigation(show_contact: bool) -> None:
     """
     st.session_state["search_box"] = ""
     st.session_state["category_radio"] = None
-    st.session_state["show_contact"] = show_contact
+    st.session_state["show_contact"] = page == "contact"
+    st.session_state["show_board"] = page == "board"
 
 
 def main() -> None:
@@ -186,7 +189,13 @@ def main() -> None:
         "🏠 홈으로 돌아가기",
         use_container_width=True,
         on_click=_reset_navigation,
-        args=(False,),
+        args=("home",),
+    )
+    st.sidebar.button(
+        "📋 게시판 (자유·문의·아이디어)",
+        use_container_width=True,
+        on_click=_reset_navigation,
+        args=("board",),
     )
 
     st.sidebar.divider()
@@ -245,18 +254,23 @@ def main() -> None:
                 if picked is not None:
                     selected_tool = tools_in_category[labels.index(picked)]
 
-    # 카테고리를 고르거나 검색을 하면(=실제로 둘러보기 시작하면) 문의 화면은 자동으로 닫아요.
+    # 카테고리를 고르거나 검색을 하면(=실제로 둘러보기 시작하면) 문의·게시판 화면은 자동으로 닫아요.
     if selected_category is not None or search_keyword.strip():
         st.session_state["show_contact"] = False
+        st.session_state["show_board"] = False
 
     st.sidebar.divider()
     st.sidebar.button(
         "✉️ 문의 및 기능 추가 요청하기",
         use_container_width=True,
         on_click=_reset_navigation,
-        args=(True,),
+        args=("contact",),
     )
     st.sidebar.caption(f"문의·요청 메일: {CONTACT_EMAIL}")
+
+    if st.session_state.get("show_board"):
+        board.render()
+        return
 
     if st.session_state.get("show_contact"):
         render_contact()
