@@ -1,0 +1,78 @@
+# 업무 자동화 올인원 웹앱
+
+사내 팀원들과 함께 쓰는 사무용 파일 자동화 도구 모음입니다. PDF·엑셀 파일을
+브라우저에서 올리기만 하면 병합, 분할, 순서 변경 같은 반복 작업을 몇 번의
+클릭으로 끝낼 수 있어요.
+
+## 화면 구성
+
+- 왼쪽 사이드바: 카테고리(PDF / Excel / 한글 / NC데이터 / 기타)를 고르면
+  그 안에 있는 도구 목록이 나타나요.
+- 사이드바 위쪽 검색창: 도구 이름이나 설명으로 바로 찾을 수 있어요.
+- 모든 도구는 **① 파일 올리기 → ② 옵션 선택 → ③ 실행 버튼 → ④ 결과 다운로드**
+  순서로 똑같이 동작해요.
+
+## 현재 제공하는 도구
+
+**PDF**
+- PDF 합치기
+- PDF 분할하기 (페이지 범위 지정)
+- PDF 페이지 순서 바꾸기
+- PDF 페이지 삭제·추출
+
+**Excel**
+- 엑셀 합치기 (시트별 유지 / 표 하나로 합치기)
+- 엑셀 시트 순서 바꾸기
+- 엑셀 시트 이름 일괄 변경
+
+"한글", "NC데이터", "기타" 카테고리는 앞으로 도구가 추가될 자리예요.
+
+## 로컬에서 실행하는 방법
+
+```bash
+# 1) (최초 1회) 이 폴더로 이동
+cd streamlit_app
+
+# 2) (최초 1회, 선택) 가상환경 만들기
+python -m venv .venv
+source .venv/bin/activate   # Windows는 .venv\Scripts\activate
+
+# 3) (최초 1회) 필요한 패키지 설치
+pip install -r requirements.txt
+
+# 4) 앱 실행
+streamlit run app.py
+```
+
+실행 후 터미널에 나오는 주소(기본값 http://localhost:8501)를 브라우저에서
+열면 됩니다. 같은 사무실 안에서 팀원과 함께 쓰려면 `streamlit run app.py
+--server.address 0.0.0.0` 으로 실행한 뒤, 실행한 PC의 사내망 IP 주소로
+접속하면 됩니다.
+
+## 새 도구를 추가하는 방법
+
+1. `tools/` 폴더 안에 파이썬 파일을 하나 만듭니다. (예: `tools/pdf_watermark.py`)
+2. 파일 안에 아래 두 가지를 넣습니다.
+
+   ```python
+   TOOL_META = {
+       "name": "화면에 보여줄 도구 이름",
+       "category": "PDF",  # PDF / Excel / 한글 / NC데이터 / 기타
+       "description": "1줄짜리 쉬운 기능 설명",
+       "icon": "💧",
+   }
+
+   def render():
+       ...  # 파일 업로드 → 옵션 선택 → 실행 → 다운로드 순서로 화면 구성
+   ```
+
+3. 저장하면 끝입니다! `app.py`를 고칠 필요 없이 사이드바 메뉴에 자동으로
+   나타나요. 여러 도구가 함께 쓰는 화면 도우미 함수는 `common.py`에 있으니
+   참고하세요. (`tool_header`, `friendly_errors`, `download_result`,
+   `step_caption`, `parse_page_ranges`)
+
+## 기술 스택
+
+- Python, Streamlit
+- PDF 처리: pypdf
+- 엑셀 처리: openpyxl, pandas
