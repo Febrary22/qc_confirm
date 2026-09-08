@@ -110,7 +110,12 @@ def render() -> None:
         )
         for dim in da.dims[:-2]:
             size = da.sizes[dim]
-            indexers[dim] = st.slider(f"'{dim}' 값 선택 (0 ~ {max(size - 1, 0)})", 0, max(size - 1, 0), 0)
+            if size <= 1:
+                # 크기가 1(또는 0)인 차원은 고를 값이 없으니 슬라이더 없이 그냥 0번째로 고정해요.
+                indexers[dim] = 0
+                st.caption(f"'{dim}' 차원은 크기가 {size}라서 자동으로 선택했어요.")
+            else:
+                indexers[dim] = st.slider(f"'{dim}' 값 선택 (0 ~ {size - 1})", 0, size - 1, 0)
 
     step_caption(3, "미리보기 만들기 버튼을 눌러주세요")
     if st.button("미리보기 만들기", type="primary"):
