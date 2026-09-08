@@ -4,6 +4,7 @@ from __future__ import annotations
 import io
 import zipfile
 from collections import defaultdict
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -16,6 +17,32 @@ TOOL_META = {
     "description": "폴더를 zip으로 압축해서 올리면 안에 뭐가 들었고 용량은 얼마나 되는지 확인하고, 엑셀로 정리해드려요.",
     "icon": "🗂️",
 }
+
+# 이 웹 도구는 업로드 용량 제한(현재 200MB) 때문에 아주 큰 폴더는 다루기 어려워요.
+# 그런 경우를 위해, 컴퓨터에 설치해서 쓰는 데스크톱 버전(같은 기능, 용량 제한 없음)을 함께 내려받을 수 있게 했어요.
+DESKTOP_APP_PATH = Path(__file__).resolve().parent.parent / "assets" / "폴더용량분석기_데스크톱버전.zip"
+
+
+def _render_desktop_download() -> None:
+    if not DESKTOP_APP_PATH.exists():
+        return
+    with st.expander("🖥️ 폴더가 훨씬 커서(수백 GB~수십 TB) 이 웹 화면으로 안 될 때는?"):
+        st.write(
+            "이 웹 도구는 업로드 용량 제한이 있어서 아주 큰 폴더는 올리기 어려워요. "
+            "대신 컴퓨터에 직접 설치해서 쓰는 **데스크톱 버전**을 내려받으면, 용량 제한 없이 "
+            "(예: 20TB짜리 폴더도) 같은 방식으로 용량을 분석하고 엑셀로 내보낼 수 있어요."
+        )
+        st.caption(
+            "⚠️ 팀 내부용으로 직접 만든 프로그램이에요. 실행 전에 회사 백신 프로그램으로 "
+            "한 번 검사해보시는 걸 추천해요."
+        )
+        st.download_button(
+            "데스크톱 버전 내려받기 (폴더용량분석기.exe, zip)",
+            data=DESKTOP_APP_PATH.read_bytes(),
+            file_name=DESKTOP_APP_PATH.name,
+            mime="application/zip",
+            use_container_width=True,
+        )
 
 
 def _human_size(num_bytes: float) -> str:
@@ -86,6 +113,7 @@ def render() -> None:
         "💡 브라우저는 폴더를 통째로 읽을 수 없어서, **폴더를 zip으로 압축**한 뒤 올려주셔야 해요.\n\n"
         "Windows: 폴더 우클릭 → 보내기 → 압축(ZIP) 폴더  /  Mac: 폴더 우클릭 → 압축"
     )
+    _render_desktop_download()
 
     step_caption(1, "분석할 폴더를 압축(zip)해서 올려주세요")
     file = st.file_uploader("zip 파일 선택", type=["zip"])
