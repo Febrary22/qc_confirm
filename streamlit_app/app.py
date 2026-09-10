@@ -20,12 +20,13 @@ import board
 import tools as tools_package
 
 # 카테고리는 이 순서로 보여줍니다. (목록에 없는 새 카테고리가 생기면 맨 뒤에 자동으로 붙어요)
-CATEGORY_ORDER = ["PDF", "Excel", "한글", "NC데이터", "기타"]
+CATEGORY_ORDER = ["PDF", "Excel", "한글", "NC데이터", "이미지", "기타"]
 CATEGORY_ICON = {
     "PDF": "📄",
     "Excel": "📊",
     "한글": "📝",
     "NC데이터": "🌊",
+    "이미지": "🖼️",
     "기타": "🧰",
 }
 
