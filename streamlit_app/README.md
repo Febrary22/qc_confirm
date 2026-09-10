@@ -35,10 +35,13 @@
 - 엑셀 합치기 (시트별 유지 / 표 하나로 합치기)
 - 엑셀 시트 순서 바꾸기
 - 엑셀 시트 이름 일괄 변경
+- CSV ↔ 엑셀 변환 (한글 인코딩 자동 감지, UTF-8/CP949 선택 가능)
 
 **한글**
 - 한글 파일 텍스트 꺼내기 (.hwp, .hwpx → 본문 글자를 뽑아 화면에 보여주고 .txt로 다운로드.
   hwpx는 본문 전체, 예전 방식인 hwp는 문서에 저장된 미리보기 글자만 지원)
+- 한글 파일을 PDF로 변환 (글자 내용을 새 PDF 문서로 재구성. 표·이미지·원본 디자인은
+  옮겨지지 않고 텍스트 위주로 변환됨)
 
 **NC데이터**
 - NC 파일 열어보기 (변수·차원·전역 속성 확인, 값 미리보기 표/그래프/히트맵, CSV·PNG 내려받기)
@@ -120,3 +123,5 @@ streamlit run app.py
 - PDF 처리: pypdf, PyMuPDF, Pillow
 - 스캔본 글자 인식(OCR): pytesseract + Tesseract OCR (한국어·영어 언어팩)
 - 엑셀 처리: openpyxl, pandas
+- 한글 파일 → PDF 변환: PyMuPDF + 나눔고딕 폰트(assets/NanumGothic.ttf, 글자 임베딩 후
+  subset_fonts()로 용량 최소화)
