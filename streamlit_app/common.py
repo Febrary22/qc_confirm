@@ -53,6 +53,16 @@ def step_caption(number: int, text: str) -> None:
     st.markdown(f"**{number}단계. {text}**")
 
 
+def human_size(num_bytes: float) -> str:
+    """바이트 숫자를 사람이 읽기 편한 단위(KB/MB/GB)로 바꿔줍니다."""
+    size = float(num_bytes)
+    for unit in ["B", "KB", "MB", "GB", "TB"]:
+        if size < 1024 or unit == "TB":
+            return f"{size:.1f}{unit}" if unit != "B" else f"{int(size)}B"
+        size /= 1024
+    return f"{size:.1f}TB"
+
+
 def parse_page_ranges(text: str, total_pages: int) -> list[int]:
     """"1-3, 5, 7-9" 같은 글자를 0부터 시작하는 페이지 번호 목록으로 바꿔줍니다.
 

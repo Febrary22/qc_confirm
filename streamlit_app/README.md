@@ -26,6 +26,10 @@
 - PDF 분할하기 (페이지 범위 지정)
 - PDF 페이지 순서 바꾸기
 - PDF 페이지 삭제·추출
+- PDF 용량 줄이기 (구조 정리만 하는 안전 모드 / 화질을 낮춰 크게 줄이는 강한 모드)
+- 이미지를 PDF로 만들기 (여러 장의 사진을 순서대로 하나의 PDF로)
+- PDF 비밀번호 걸기·풀기
+- 스캔본 글자 인식(OCR) — 사진처럼 찍힌 PDF에서 글자를 읽어 텍스트로 추출 (한국어·영어)
 
 **Excel**
 - 엑셀 합치기 (시트별 유지 / 표 하나로 합치기)
@@ -113,5 +117,6 @@ streamlit run app.py
 ## 기술 스택
 
 - Python, Streamlit
-- PDF 처리: pypdf
+- PDF 처리: pypdf, PyMuPDF, Pillow
+- 스캔본 글자 인식(OCR): pytesseract + Tesseract OCR (한국어·영어 언어팩)
 - 엑셀 처리: openpyxl, pandas
