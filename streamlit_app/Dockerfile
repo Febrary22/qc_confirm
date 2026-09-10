@@ -4,6 +4,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# 스캔본 글자 인식(OCR) 도구가 쓰는 tesseract 엔진 (한국어 + 영어 언어팩 포함)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tesseract-ocr tesseract-ocr-kor \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY streamlit_app/requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
